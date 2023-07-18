@@ -1,0 +1,48 @@
+\section{Balance partial differential equations}
+	
+In this section we write down the PDEs of our system, which are continuity equation, momentum balance and energy balance. These are taken from the Naranjani paper, converted in vectorial form for semplicity.\\
+As assumpitons, we consider the air as an incompressible, steady-state, Newtonian fluid.
+	
+\subsection{Navier-Stokes}
+	
+\begin{equation} \label{Navier-Stokes}
+	\begin{cases}
+		\nabla\cdot( \rho_a \vec{u} ) = 0  \\
+		\nabla \cdot ( \rho_a \vec{u} \vec{u} ) = - \nabla P + \mu( \Delta \vec{u} + \nabla(\nabla\cdot\vec{u} )) + \rho_a\vec{g} \\
+		+ BCs \\
+		+ (k-\epsilon) \\
+	\end{cases}	
+\end{equation}
+Where the unkowns are $\vec{u}$ [$ms^{-1}$], which is the air fluid velocity, and P [$W$], which is the required power of the fans.\\
+Moreover $\rho_a$ [$kg m^{-2}$], $\mu$ [$kg m^{1} s^{-1}$] and $\vec{g}$ [$ms^{-2}$] are respectively the air density, the dynamic viscosity and the gravitational acceleration.\\
+From this system \eqref{Navier-Stokes} we aim to compute the fluid velocity of the air ($\vec{u}$), in order to use it as known variable on the next equation.\\
+Moreover, for the moment, we start for semplicity to consider the flow laminar, namely we are not integrating the $k-\epsilon$ turbulence model yet.\\
+\
+\subsection{Energy Balance}
+	
+The energy balance:
+\begin{equation} \label{air energy balance}
+	\begin{cases}		
+	\nabla\cdot(\rho_a\vec{u} C_p T_a )-\Delta(\lambda T_a) = 0 \\
+	+BCs\\
+	\end{cases}
+\end{equation}
+yields the unknown air temperature $T_a$ [$K$], which is of high interest for us, with $C_p$ [$J kg^{-1} K^{-1}$] being the specific heat capacity and $\lambda$ [$W m^{-1} s^{-1}$] being the thermal conductivity, both given values.
+\\
+In accordance with the paper, we decided to put the source and sink term equal to 0; hence we will need to incorporate the presence of leds (heat sources in our system) inside the boundary conditions, since they are located on the upper surface of our cell.
+\\
+	
+\section{Species Mass Fraction}
+We incorporate form Naranjani as well an equation which allows us to compute the mass fraction ($\gamma_n$) of the species composing the fluid ($H_2O$, $CO_2$, $O_2$ and $N_2$):
+\begin{equation} \label{air mass fractions}
+	\nabla\cdot(\rho_a\vec{u}\gamma_n) = - \nabla\cdot(\vec{j_n}) + R_n + S_n
+\end{equation}
+With $n$ indicating the specie and $\vec{j_n}$ [$kg m^{-2} s^{-1}$] being the turbolent mass diffusion flux. \\
+In particular we compute the value of $\gamma$ for $H_2O$ and $CO_2$: we will need these values later on.\\
+(indeed: $\gamma_{H_2O}$ appears in \eqref{heat fluxes}, but may not be needed if the saturation assumption \eqref{saturation hypotesis} is made; $\gamma_{CO_2}$ is used in \eqref{van henten 2})\\
+About the sink and source terms here:
+\begin{itemize}
+	\item $R_n$=0: term related with chemical reactions we don't consider;
+	\item $S_n$ is user-defined and related with the presence of lettuce, hence we consider it $\neq0$ only on the exchange surface. This means that, changing the value of $S_n$, we can compute two different values for each specie: $\gamma_{n,sur}$ and $\gamma_{n,air}$.
+\end{itemize}
+

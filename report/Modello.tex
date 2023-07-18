@@ -1,0 +1,37 @@
+\documentclass[10pt,a4paper]{book}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage[shortlabels]{enumitem}
+\usepackage{gensymb}
+\usepackage{textcomp}
+\includeonly{Naranjani.tex, Van Henten.tex, Gramaans.tex}
+
+\author{Luca Ciarimboli, Lorenzo Citterio, Marianna Dell'Otto}
+\title{NAPDE project - titolo provvisorio}
+
+\begin{document}
+	\begin{titlepage}
+		\maketitle
+	\end{titlepage}
+	
+	\frontmatter
+	\chapter*{Abstract}
+	This document presents our mathematical model for predicting the evapotranspiration of the lettuce inside a simplified cubic cell.\\
+	This is only a sketch that, one day (hopefully soon), will become the basis of the report for this project.\\
+	The document is divided into three chapters, each one reporting the equations of our interest from one out of the three papers we have used to build the model.\\
+	Since this is only a sketch and not for diffusion, papers are not quoted yet, neither are the other papers quoted inside them; we refer to each paper using the name of the author: this is clear enough at the moment.\\
+	Of course we will provide to include a references list and to quote properly each source.\\
+	\tableofcontents
+	
+	\mainmatter
+	\chapter{Naranjani}
+	\input{papers/Naranjani.tex}
+	\chapter{Van Henten}
+	\input{papers/Van Henten.tex}
+	\chapter{Graamans}
+	\input{papers/Graamans.tex}
+	
+	\backmatter
+	
+\end{document}

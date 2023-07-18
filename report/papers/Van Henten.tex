@@ -1,0 +1,99 @@
+\section{Dry weight model}
+	
+In this section we use the model provided by the paper Van Henten, yielding the dry weigth $DW$ [$g$] of the crop.\\
+In particular the idea is to divide the dry weight between \emph{non structural} weight $X_{nsdw}$ (which consists of glucose, sucrose, starch, etc) and \emph{structural} weight $X_{sdw}$.\\
+Both $X_{sdw}$, $X_{nsdw}$ are in [$gm^{-2}$], meaning that:
+\begin{equation*} \label{DW}
+	DW(t) = \frac{ X_{sdw}(t) + X_{nsdw}(t) }{n}
+\end{equation*}
+with $n$ being the number of plants per squared meter.
+\\
+The model is given by the following system of ODEs:
+\begin{equation} \label{van henten model}
+	\begin{cases}
+		\frac{d}{dt}X_{nsdw}(t) = c_\alpha f_{phot}(t) - r_{gr}(t)X_{sdw}(t) - f_{resp}(t) - \frac{1-c_\beta}{c_\beta}r_{gr}(t)X_{sdw}(t) \\
+		\frac{d}{dt}X_{sdw}(t) = r_{gr}(t)X_{sdw}(t)\\
+	\end{cases}
+\end{equation}
+Where the coefficients are known and given by the paper:
+\begin{itemize}
+	\item $c_\alpha=30/44\approx{0.68}$ is the ratio of molecular weigth of $CH_2O$ (sugar) and $CO_2$;
+	\item $c_\beta=0.8$ indicates the respiratory and synthesis losses of non-structural material due to growht. The value $0.8$ for lettuce was estimated on paper Sweeney.
+\end{itemize}
+Moreover, the other functions describe what follows:
+\begin{itemize}
+	\item $f_{phot}$ [$gm^{-2}s^{-1}$] is the gross canopy photosyntesis;
+	\item $f_{resp}$ [$gm^{-2}s^{-1}$] is the manteinance respiration;
+	\item $r_{gr}$ [$s^{-1}$] is the specific growth rate.
+\end{itemize}
+The latters are computable through further relations we must add to our system of equation.
+
+\section{Further needed relations}
+	
+First of all, remark that we already computed $T_a$ (at \eqref{air energy balance}) and $\gamma_{CO_2}$ (at \eqref{air mass fractions}).\\
+Moreover, for the canopy temperature $T_c$ [$K$],  we introduce the following approximation suggested to us by \emph{Agricola Moderna}:
+\begin{equation} \label{canopy temperature}
+	T_c \approx{T_a -1}\\
+\end{equation}
+	
+\subsection{Functions inside \eqref{van henten model}}
+The equations yielding the missing functions of the model we are looking for are:
+\begin{equation} \label{van henten 1}
+	\begin{cases}		
+		f_{phot}(t) = (1-exp(-c_Kc_{lar}(1-c_\tau)X_{sdw}(t)))f_{phot,max}\\
+		f_{resp}(t) = (c_{resp,sht}(1-c_\tau)X_{sdw}(t) + c_{resp,rt}c_\tau X_{sdw}(t))c_{Q_{10},resp}^{\frac{T_c - 25}{10}}\\		
+		r_{gr}(t) = c_{gr,max}\frac{X_{nsdw}(t)}{X_{sdw}(t) + X_{nsdw}(t)}c_{Q_{10},gr}^{\frac{T_c - 20}{10}}\\
+	\end{cases}
+\end{equation}
+where the given coefficients are:
+\begin{itemize}
+	\item $c_{K}\approx{o.9}$ is the extinction coefficient;
+	\item $c_{lar}\approx{75\times10^{-3}}$ $m^2g^{-1}$ is the structural leaf area, measured by Lorenz \& Wiebe (1980);
+	\item $c_\tau=0.15$ is the ratio of the root dry weigth and the total dry weigth, reported constant by assumption by Lorenz \& Weibe and Sweeney;
+	\item $c_{resp,sht}\approx{3.47\times10^{-7}}$ $s^{-1}$ is the shoot maintenance respiration coefficient;
+	\item $c_{resp,rt}\approx{1.16\times10^{-7}}$ $s^{-1}$ is the root maintenance respiration coefficient;
+	\item $c_{Q_{10},resp}=2$ is the $Q_{10}$ factor of the maintenance respiration;
+	\item $c_{gr_max}\approx{5\times10^{-6}}$ $s^{-1}$ is the saturation growth rate estimated by Van Holsteijn (1981);
+	\item $c_{Q_{10},gr}=1.6$ is the $Q_{10}$ factor for growth.
+\end{itemize}
+	
+\subsection{Functions inside \eqref{van henten 1}}
+For the parameters inside system \eqref{van henten 1} missing a given value,
+the paper reports the following relations:
+\begin{equation} \label{van henten 2}
+	\begin{cases}
+		f_{phot,max} = \frac{\epsilon U_{par}g_{CO_2}c_\omega(\gamma_{CO_2}-\Gamma)}{\epsilon U_{par} + g_{CO_2}c_\omega(\gamma_{CO_2}-\Gamma)}\\
+		\Gamma = c_\Gamma c_{Q_{10},\Gamma} ^{\frac{T_c-20}{10}}\\
+		\epsilon = c_\epsilon \frac{\gamma_{CO_2}-\Gamma}{\gamma_{CO_2}+2\Gamma}\\
+		\frac{1}{g_{CO_2}} = \frac{1}{g_{bnd}} + \frac{1}{g_{stm}} + \frac{1}{g_{car}}\\
+		g_{car} = c_{car,1}T_c^2 + c_{car,2}T_c + c_{car,3}\\
+	\end{cases}
+\end{equation}
+	
+where
+\begin{itemize}
+	\item $\epsilon$ [$gJ^{-1}$] is the light use efficiency;
+	\item $\Gamma$ [$ppm$] is the $CO_2$ compensation point accounting for photorespiration at high ligth levels;
+	\item $U_{par}$ [$Wm^{-2}$] is the incident photosyntetically active radiation;
+	\item $g_{CO_2}$ [$ms^{-1}$] is the canopy conductance to $CO_2$ diffusion;
+	\item $c_\omega \approx{1.83\times10^{-3}}$ $gm^{-3}$ is the estimated $CO_2$ density at $15^\circ$ temperature and ambient pressure;
+	\item $c_\Gamma=40$ $ppm$ is the value of $\Gamma$ at $20^\circ$;
+	\item $c_{Q_{10},\Gamma} = 2$ is the $Q_{10}$ value which accounts for the effect of temperature on $\Gamma$;
+	\item $c_\epsilon=17.0\times10^{-6}$ $gJ^{-1}$ is the value of $\epsilon$ at very high $CO_2$ concentrations (Gondurian et al., 1985);
+	\item $g_{bnd}$ [$ms^{-1}$] is the boundary layer conductance;
+	\item $g_{stm}$ [$ms^{-1}$] is the stomatal conductance;
+	\item $g_{car}$ [$ms^{-1}$] is the carboxylation conductance, with $c_{car,1} = -1.32\times10^{-5}$ $ms^{-1} {[\degree C]}^{-2}$, $c_{car,2} = 5.94\times10^{-4}$ $ms^{-1} {[\degree C]}^{-2}$ and $c_{car,2} = -2.64\times10^{-3}$ $ms^{-1} {[\degree C]}^{-2}$;
+\end{itemize}
+	x
+\section{Leaf Area Index}
+After the huge system of equation discussed by far, one is now allowed to compute the dry weight as a function of the time.
+In particular, we aim to use $X_{sdw}$ to compute a crucial parameter for us: the "Leaf Area Index" ($LAI$) [$m^2/g$], that plays a role in the energy balance of the crop, that is the latter step of our model.
+Paper Van Henten gives the following relation:
+\begin{equation} \label{LAI}
+	LAI = \frac{(1-c_\tau)c_{lar}X_{sdw}(t)}{n}\\
+\end{equation}
+Notice that $LAI$ was "hidden" inside the equation for $f_{phot}$, we did not call it $LAI$ yet since we were not able to compute it without knowing $X_{sdw}$.\\
+Notice moreover that paper Graamans (that treats the crop energy balance) indicates with $LAI$ not the value computed here, but another one we call $LAI_{effective}$.
+Indeed: $LAI$ does not consider the fact that, when lettuce is grown enough, part of the leaves could overlap with the ones of adjoining plants.\\
+The relation enabling us to update $LAI$ into $LAI_{effective}$ is determined by the paper "Tei et al.".\\
+For the moment we consider for semplicity the "old" estimate of $LAI$ given by Van Henten good enough for us. 	
