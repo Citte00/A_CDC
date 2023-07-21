@@ -8,7 +8,7 @@ As assumpitons, we consider the air as an incompressible, steady-state, Newtonia
 \begin{equation} \label{Navier-Stokes}
 	\begin{cases}
 		\nabla\cdot( \rho_a \vec{u} ) = 0  \\
-		\nabla \cdot ( \rho_a \vec{u} \vec{u} ) = - \nabla P + \mu( \Delta \vec{u} + \nabla(\nabla\cdot\vec{u} )) + \rho_a\vec{g} \\
+		(\rho_a\vec{u}\cdot\nabla)\vec{u} + \vec{u}\nabla\cdot(\rho_a\vec{u}) = - \nabla P + \mu(\Delta\vec{u} + \nabla(\nabla\cdot\vec{u} )) + \rho_a\vec{g} \\
 		+ BCs \\
 		+ (k-\epsilon) \\
 	\end{cases}	
