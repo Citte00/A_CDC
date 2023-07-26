@@ -1,0 +1,25 @@
+//constants
+real calpha=30/44; //ratio of molecolar weight of CH20 and CO2
+real cbeta=0.8; //respiratory and synthesis losses of non-structural material due to growht
+
+real ck=0.9; //extinction coefficient
+real clar=75*10^(-3); //structural leaf area
+real ctau=0.15; //ratio of the root dry weigth and the total dry weigth
+real crespSHT=3.47*10^(-7); //shoot maintenance respiration coefficient
+real crespRT=1.16*10^(-7); //root maintenance respiration coefficient
+real cQ10resp=2; //Q10 factor of the maintenance respiration
+real cgrMax=5*10^(-6); //saturation growth resistance
+real cQ10gr=1.6; //Q10 factor for growth
+
+real Upar=45; //incident photosyntetically active radiation 
+//dato fornito da Agricola Moderna
+real comega=1.83*10^(-3); //estimated CO2 density at 15◦C temperature and ambient pressure
+real cgamma=40; //value of gamma at 20°C
+real cQ10gamma=2; //Q10 value which accounts for the effect of temperature on Γ
+real cepsilon=17.0*10^(-6); //value of epsilon at very high CO2 concentration
+real gbnd=0.007; //boundary layer conductance
+real gstm=0.005; //stomatal conductance
+real ccar1=-1.32*10^(-5); 
+real ccar2=5.94*10^(-4);
+real ccar3=-2.64*10^(-3); 
+
