@@ -1,0 +1,74 @@
+load "msh3"
+load "medit" // Tool utile per plottare la mesh
+
+//Data
+real mu=1.825*10^(-5); //a 20C da internet
+real rhoa=1.293; // da internet
+real g=9.81; //gravitational acceleration
+real uMax = 10.;
+
+//Mesh Generation
+real L = 1.;
+mesh3 Th = cube(20, 20, 20, [L*x, L*y, L*z]);
+
+//Finite Elements Spaces:
+fespace Vh(Th, [P23d, P23d, P23d]);
+Vh [ux,uy,uz] , [vx,vy,vz] ;
+
+fespace Qh(Th, P13d);
+Qh p, q, dp;
+
+//Macro
+macro grad(v) [dx(v), dy(v), dz(v)] //
+func real grad3( Vh [vx,vy,vz] ) {
+		matrix G(3,3);
+		G(0,0) = dx(vx);
+		G(0,1) = dy(vx);
+		G(0,2) = dz(vx);
+		G(1,0) = dx(vy);
+		G(1,1) = dy(vy);
+		G(1,2) = dz(vy);
+		G(2,0) = dx(vz);
+		G(2,1) = dy(vy);
+		G(2,2) = dz(vz);
+		return G;
+		} // gradient of a vector
+macro div(vx,vy,vz) ( dx(vx) + dy(uy) + dz(uz) ) //
+macro div3(uu) [ div( uu(:,0) , div( uu(:,1) ) , div( uu(:,2) ) ] // divergence of a double tensor
+macro u_gradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
+func real tensor_product( Vh [ux,uy,uz], Vh [vx,vy,vz] ) {
+		matrix T(3,3);
+		T(0,0) = ux*vx;
+		T(0,1) = ux*vy;
+		T(0,2) = ux*vz;
+		T(1,0) = uy*vx;
+		T(1,1) = uy*vy;
+		T(1,2) = uy*vz;
+		T(2,0) = uz*vx;
+		T(2,1) = uz*vy;
+		T(2,2) = uz*vz;
+		return T;
+		} //
+
+varf NS( [ux,uy,uz,p] , [vx,vy,vz,q] ) = 
+
+	int3d(Th)(
+		rhoa * grad3(ux,uy,uz)' * grad3(vx,vy,vz)  -
+		mu * div(ux,uy,uz) * div(vx,vy,vz) +
+		div3( rhoa * tensor_product(u,u) )' * [vx,vy,vz] - 
+		p * div(vx,vy,vz) - 
+		div( rhoa*ux , rhoa*uy , rhoa*uz ) * q
+		) // l.h.s integral
+
+	+ int3d(Th)(
+		rhoa * (-g) * vz
+		) // r.h.s. integral
+
+	+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) // Dirichlet BCs on lateral wall
+	+ on(1, ux = uMax , uy = 0 , uz = 0 ) //Dirichlet BCs on inflow face
+	+ on(3, ( mu * grad3(ux,uy,uz) + mu * div(ux,uy,uz) - p ) * n = 1 ); // Neumann BCs on outflow face (???)	  
+	
+	);
+
+matrix A;
+
