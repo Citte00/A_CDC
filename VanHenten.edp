@@ -45,8 +45,8 @@ real dt = (tmax - t0) / N;
 real Nmax = 1000;
 real toll = 1e-9;
 
-real Xsdw = 1.2;
-real Xnsdw = 1.5;
+real Xsdw = 1e-5;
+real Xnsdw = 3e-7;
 
 //gross canopy photosynthesis (g * m^-2 * s^-1)
 func real fphot(real xsdw){ return (1 - exp(-ck*clar*(1 - ctau) * xsdw)) * fphotmax; };
@@ -81,8 +81,7 @@ for(int i = 0.; i < N; ++i){
     real v0 = phi2(Xsdw, Xnsdw);
     real w1 = 0.;
     real v1 = 0.;
-
-    while((err1 > toll) && (err2 > toll) && (j < Nmax)){
+    while(((err1 > toll) || (err2 > toll)) && (j < Nmax)){
         w1 = phi1(w0, v0);
         v1 = phi2(v0, w0);
         err1 = abs(w1 - w0);
@@ -90,6 +89,7 @@ for(int i = 0.; i < N; ++i){
         w0 = w1;
         v0 = v1;
         j++;
+        
     }
 
     Xnsdw = w1;
