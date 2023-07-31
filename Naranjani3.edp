@@ -1,74 +1,127 @@
 load "msh3"
-load "medit" // Tool utile per plottare la mesh
+load "medit" // Tool per plottare la mesh
+
 
 //Data
 real mu=1.825*10^(-5); //a 20C da internet
 real rhoa=1.293; // da internet
 real g=9.81; //gravitational acceleration
-real uMax = 10.;
+real uMax = 10. ;// Inlet boundary velocity (for Dirichlet condition)
+
 
 //Mesh Generation
-real L = 1.;
-mesh3 Th = cube(20, 20, 20, [L*x, L*y, L*z]);
+real L = 1;
+mesh3 Th = cube(20, 20, 20, [L*x,L*y,L*z]);
+medit("Mesh", Th);
+// Su "FreeFem Documentation" ho trovato che le labels di default per le facce sono:
+// 1: y=0 , 2: x=1 , 3: y=1 , 4: x=0 , 5: z=0 , 6: z=1
+// Dunque nel nostro caso abbiamo che: {2,4,5,6} = wall; 1 = inflow boundary ; 3 = outflow boundary
+// Si potrebbe (in futuro) inserire un labeling delle facce da usare nella formulazione del problema, per maggiore chiarezza
+
 
 //Finite Elements Spaces:
-fespace Vh(Th, [P23d, P23d, P23d]);
-Vh [ux,uy,uz] , [vx,vy,vz] ;
+fespace Vh(Th, [P2, P2, P2]);
+Vh [ux,uy,uz] , [vx,vy,vz] ; //Fluid velocity, test function
+Vh [ux1,uy1,uz1] , [dux,duy,duz] ; //Fluid Velocity all'iterazione successiva, variazione tra un'iterazione e l'altra
 
-fespace Qh(Th, P13d);
-Qh p, q, dp;
+fespace Qh(Th, P1);
+Qh p , q ; // Potenza e test function
+Qh p1 ; // Potenza all'iterazione successiva
+
 
 //Macro
 macro grad(v) [dx(v), dy(v), dz(v)] //
-func real grad3( Vh [vx,vy,vz] ) {
-		matrix G(3,3);
-		G(0,0) = dx(vx);
-		G(0,1) = dy(vx);
-		G(0,2) = dz(vx);
-		G(1,0) = dx(vy);
-		G(1,1) = dy(vy);
-		G(1,2) = dz(vy);
-		G(2,0) = dx(vz);
-		G(2,1) = dy(vy);
-		G(2,2) = dz(vz);
-		return G;
-		} // gradient of a vector
+macro grad3(vx,vy,vz) [ [dx(vx), dy(vx), dz(vx)],
+			  [dx(vy), dy(vy), dz(vy)],
+			  [dx(vz), dy(vy), dz(vz)] ] //
 macro div(vx,vy,vz) ( dx(vx) + dy(uy) + dz(uz) ) //
-macro div3(uu) [ div( uu(:,0) , div( uu(:,1) ) , div( uu(:,2) ) ] // divergence of a double tensor
+macro div3(uu) [ div( uu(:,0) , div( uu(:,1) ) , div( uu(:,2) ) ] //
 macro u_gradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
-func real tensor_product( Vh [ux,uy,uz], Vh [vx,vy,vz] ) {
-		matrix T(3,3);
-		T(0,0) = ux*vx;
-		T(0,1) = ux*vy;
-		T(0,2) = ux*vz;
-		T(1,0) = uy*vx;
-		T(1,1) = uy*vy;
-		T(1,2) = uy*vz;
-		T(2,0) = uz*vx;
-		T(2,1) = uz*vy;
-		T(2,2) = uz*vz;
-		return T;
-		} //
+macro tensor_product(ux,uy,uz,vx,vy,vz) [ [ux*vx, ux*vy, ux*vz],
+					  [uy*vx, uy*vy, uy*vz],
+					  [uz*vx, uz*vy, uz*vz] ] //
 
-varf NS( [ux,uy,uz,p] , [vx,vy,vz,q] ) = 
 
-	int3d(Th)(
-		rhoa * grad3(ux,uy,uz)' * grad3(vx,vy,vz)  -
-		mu * div(ux,uy,uz) * div(vx,vy,vz) +
-		div3( rhoa * tensor_product(u,u) )' * [vx,vy,vz] - 
-		p * div(vx,vy,vz) - 
-		div( rhoa*ux , rhoa*uy , rhoa*uz ) * q
-		) // l.h.s integral
+func h = 0*x + 0*y + 0*z + 1; // Dato al bordo di Neumann
 
-	+ int3d(Th)(
-		rhoa * (-g) * vz
-		) // r.h.s. integral
+// Problema di Stokes (lineare) per inizializzare il metodo di Newton:
+problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
 
-	+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) // Dirichlet BCs on lateral wall
-	+ on(1, ux = uMax , uy = 0 , uz = 0 ) //Dirichlet BCs on inflow face
-	+ on(3, ( mu * grad3(ux,uy,uz) + mu * div(ux,uy,uz) - p ) * n = 1 ); // Neumann BCs on outflow face (???)	  
+	= int3d(Th)( mu * grad3(ux,uy,uz)' * grad3(vx,vy,vz) + 
+		     mu * div(ux,uy,uz) * div(vx,vy,vz) - 
+		     div(vx,vy,vz) * p +
+		     div(rhoa*ux , rhoa*uy , rhoa*uz) * q) // l.h.s. della weak formulation
+	
+	- int3d(Th)( rhoa * (-g) * vz ) // r.h.s. della weak formulation
+
+	+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) // Dirichlet BCs sulle pareti laterali (wall)
+	+ on(1, ux = uMax , uy = 0 , uz = 0 ) //Dirichlet BCs sulla faccia 1 (inflow)
+	+ int2d(Th,3)( h*[vx,vy,vz] ) // Neumann BCs sulla faccia 3 (outflow)
+ 	  
+	);
+
+// Navier Stokes linearizzato:
+problem linearized_NS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
+	
+	= int3d(Th)( 
+
+		    u_gradv( rhoa*ux, rhoa*uy, rhoa*uz, ux1, uy1, uz1)' * [vx,vy,vz] + 
+//		    u_gradv( ux, uy, uz, rhoa*ux1, rhoa*uy1, rhoa*uz1)' * [vx,vy,vz] +		
+
+		     mu * grad3(ux1,uy1,uz1)' * grad3(vx,vy,vz) +
+	 	     mu * div(ux1,uy1,uz1) * div(vx,vy,vz) -
+		     div(vx,vy,vz) * p1 +
+		     div(rhoa*ux1 , rhoa*uy1 , rhoa*uz1) * q)
+
+	- int3d(Th)( rhoa * (-g) * vz )	
+//		   + u_gradv( ux, uy, uz, ux, uy, uz) )  
+
+	+ on(2,4,5,6, ux1 = 0 , uy1 = 0 , uz1 = 0 )
+	+ on(1, ux1 = uMax , uy1 = 0 , uz1 = 0 )
+	+ int2d(Th,3)( h*[vx,vy,vz] )
 	
 	);
 
-matrix A;
 
+// Risoluzione del problema non-lineare usando Newton:
+
+real toll = 1e-09 // Tolleranza per la variazione dell'errore (della fluid velocity u)
+int k_max = 15 // Numero massimo di iterazioni per capire se Newton diverge
+
+macro Navier_Stokes(){
+	int k;
+	real err = 0; // Inizializzo l'errore a 0
+	
+	linearized_NS // Inizializzo il ciclo risolvendo Stokes (lineare):
+	
+	for( k = 0 ; k < k_max ; k++ ) {
+	
+	linearized_NS; // Risolvo u_k+1 usando NS linearizzato
+	
+	// Calcolo l'errore all'iterazione k+1:
+	dux[] = ux1[] - ux[];
+	duy[] = uy1[] - uy[];
+	duz[] = uz1[] - uz[];
+	err = sqrt( int3d(Th) (grad3(dux,duy,duz)' * grad3(dux,duy,duz)) ) / 
+		sqrt( int3d(Th) (grad3(ux,uy,uz)' * grad3(ux,uy,uz)) );
+	
+	// Aggiorno fluid velocity:
+	ux[] = ux1[];
+	uy[] = uy1[];
+	uz[] = uz1[];
+
+	if( err < toll ) break;
+	}
+
+	//Se dopo k_max iterazioni l'errore Ã ancora grande --> Newton diverge:
+	if( err > toll ) cout << "WARNING: Newton method does not converge in " << k+1 << " iterations!" << endl;  
+
+	// Stampo l'errore dopo l'ultima iterazione:
+	cout << "Error after " << k+1 << " iterations: " << err << endl ;
+}
+
+Navier_Stokes;
+
+// Plot del risultato:
+plot( p , cmm='Power');
+plot( [ux,uy,uz] , cmm='Fluid Velocity');
