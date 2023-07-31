@@ -33,24 +33,19 @@ Qh p1 ; // Potenza all'iterazione successiva
 macro grad(v) [dx(v), dy(v), dz(v)] //
 macro grad3(vx,vy,vz) [ [dx(vx), dy(vx), dz(vx)],
 			  [dx(vy), dy(vy), dz(vy)],
-			  [dx(vz), dy(vy), dz(vz)] ] //
-macro div(vx,vy,vz) ( dx(vx) + dy(uy) + dz(uz) ) //
-macro div3(uu) [ div( uu(:,0) , div( uu(:,1) ) , div( uu(:,2) ) ] //
+			  [dx(vz), dy(vz), dz(vz)] ] //
+macro div(vx,vy,vz) (dx(vx) + dy(vy) + dz(vz)) //
 macro u_gradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
-macro tensor_product(ux,uy,uz,vx,vy,vz) [ [ux*vx, ux*vy, ux*vz],
-					  [uy*vx, uy*vy, uy*vz],
-					  [uz*vx, uz*vy, uz*vz] ] //
-
 
 func h = 0*x + 0*y + 0*z + 1; // Dato al bordo di Neumann
 
 // Problema di Stokes (lineare) per inizializzare il metodo di Newton:
 problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
 
-	= int3d(Th)( mu * grad3(ux,uy,uz)' * grad3(vx,vy,vz) + 
-		     mu * div(ux,uy,uz) * div(vx,vy,vz) - 
-		     div(vx,vy,vz) * p +
-		     div(rhoa*ux , rhoa*uy , rhoa*uz) * q) // l.h.s. della weak formulation
+	= int3d(Th)( mu * grad3(ux,uy,uz)' * grad3(vx,vy,vz) +
+		     mu * div(ux,uy,uz) * div(vx,vy,vz) -
+             div(vx,vy,vz) * p +
+		     div(rhoa*ux , rhoa*uy , rhoa*uz) * q ) // l.h.s. della weak formulation
 	
 	- int3d(Th)( rhoa * (-g) * vz ) // r.h.s. della weak formulation
 
