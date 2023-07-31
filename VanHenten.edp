@@ -89,7 +89,6 @@ for(int i = 0.; i < N; ++i){
         w0 = w1;
         v0 = v1;
         j++;
-        
     }
 
     Xnsdw = w1;
@@ -98,3 +97,7 @@ for(int i = 0.; i < N; ++i){
 
 cout << "X_nsdw = " << Xnsdw << endl;
 cout << "X_sdw = " << Xsdw << endl;
+
+ofstream file("result.txt");
+file << "X_nsdw = " << Xnsdw << "\n";
+file << "X_sdw = " << Xsdw << "\n";
