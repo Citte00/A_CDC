@@ -1,8 +1,5 @@
 load "msh3" // Tool per generare la mesh 3d
 load "medit" // Tool per plottare la mesh
-load "mshmet" // Tool per plottare
-
-
 
 //Data
 real mu=1.825*10^(-5); //a 20C da internet
@@ -34,11 +31,48 @@ Qh rhoa = 1.293;
 
 //Macro
 macro grad(v) [dx(v), dy(v), dz(v)] //
-macro div(vx,vy,vz) (dx(vx) + dy(vy) + dz(vz)) //
+macro div(vx,vy,vz) ( dx(vx) + dy(vy) + dz(vz) ) //
 macro DivRho(vx,vy,vz,rho) ( grad(rho)' * [vx,vy,vz] + rho * div(vx,vy,vz) ) //
 macro ugradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
 
+// Macro contenente ciclo di Newton per la risoluzione:
+real toll = 1e-09; // Tolleranza per la variazione dell'errore (della fluid velocity u)
+int kmax = 15; // Numero massimo di iterazioni per capire se Newton diverge
+
+macro NavierStokes(){
+	Stokes; // Inizializzo il ciclo risolvendo Stokes (lineare)
+
+	for(int k = 0 ; k < kmax ; k++ ){
+
+	    linNS; // Risolvo u_k+1 usando NS linearizzato
+
+	    // Calcolo l'errore all'iterazione k+1:
+	    dux[] = ux1[] - ux[];
+	    duy[] = uy1[] - uy[];
+	    duz[] = uz1[] - uz[];
+	    real err = sqrt( int3d(Th) ( grad(dux)'*grad(dux) + grad(duy)'*grad(duy) + grad(duz)'*grad(duz) ) ) /
+		    sqrt( int3d(Th) ( grad(ux)'*grad(ux) + grad(uy)'*grad(uy) + grad(uz)'*grad(uz) ) );
+
+	    // Aggiorno fluid velocity:
+	    ux[] = ux1[];
+	    uy[] = uy1[];
+	    uz[] = uz1[];
+	    p[] = p1[];
+
+	    if( err < toll ){
+		    // Stampo l'errore dopo l'ultima iterazione:
+    	    cout << "Error after " << k+1 << " iterations: " << err << endl ;
+    	    break;
+	    }
+
+	    //Se dopo k_max iterazioni l'errore e' ancora grande --> Newton diverge:
+	    if( k == kmax - 1 )
+    	    cout << "WARNING: Newton method does not converge in " << kmax << " iterations!" << endl;
+	}
+} //
+
 func h = 0; // Dato al bordo di Neumann
+func uIn = uMax; // Dato al bordo Dirichlet
 
 // Problema di Stokes (lineare) per inizializzare il metodo di Newton:
 problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
@@ -51,11 +85,11 @@ problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
 	- int3d(Th)( rhoa * (-g) * vz ) // r.h.s. della weak formulation
 
 	+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) // Dirichlet BCs sulle pareti laterali (wall)
-	+ on(1, ux = 0 , uy = uMax , uz = 0 ) //Dirichlet BCs sulla faccia 1 (inflow)
+	+ on(1, ux = 0 , uy = uIn , uz = 0 ) //Dirichlet BCs sulla faccia 1 (inflow)
 	+ int2d(Th,3)( h*vy ); // Neumann BCs sulla faccia 3 (outflow)
 
 // Navier Stokes linearizzato:
-problem linearizedNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
+problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 	
 	= int3d(Th)( 
 
@@ -64,55 +98,18 @@ problem linearizedNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 		     mu * ( grad(ux1)'*grad(vx) + grad(uy1)'*grad(vy) + grad(uz1)'*grad(vz) ) +
 	 	     mu * div(ux1,uy1,uz1) * div(vx,vy,vz) -
 		     div(vx,vy,vz) * p1 +
-		     DivRho(ux1, uy1, uz1, rhoa) * q)
+		     DivRho(ux1, uy1, uz1, rhoa) * q )
 
 	- int3d(Th)( rhoa * (-g) * vz )
 
 	+ on(2,4,5,6, ux1 = 0 , uy1 = 0 , uz1 = 0 )
-	+ on(1, ux1 = 0 , uy1 = uMax , uz1 = 0 )
-	+ int2d(Th,3)( h*vy ) ;
+	+ on(1, ux1 = 0 , uy1 = uIn , uz1 = 0 )
+	+ int2d(Th,3)( h*vy );
 
 
 // Risoluzione del problema non-lineare usando Newton:
-
-real toll = 1e-09; // Tolleranza per la variazione dell'errore (della fluid velocity u)
-int kmax = 15; // Numero massimo di iterazioni per capire se Newton diverge
-
-macro NavierStokes(){
-
-	Stokes; // Inizializzo il ciclo risolvendo Stokes (lineare):
-	
-	for( int k = 0 ; k < kmax ; k++ ) {
-	
-	linearizedNS; // Risolvo u_k+1 usando NS linearizzato
-	
-	// Calcolo l'errore all'iterazione k+1:
-	dux[] = ux1[] - ux[];
-	duy[] = uy1[] - uy[];
-	duz[] = uz1[] - uz[];
-	real err = sqrt( int3d(Th) ( grad(dux)'*grad(dux) + grad(duy)'*grad(duy) + grad(duz)'*grad(duz) ) ) /
-		sqrt( int3d(Th) ( grad(ux)'*grad(ux) + grad(uy)'*grad(uy) + grad(uz)'*grad(uz) ) );
-	
-	// Aggiorno fluid velocity:
-	ux[] = ux1[];
-	uy[] = uy1[];
-	uz[] = uz1[];
-	p[] = p1[];
-
-	if( err < toll ){
-		// Stampo l'errore dopo l'ultima iterazione:
-    	cout << "Error after " << k+1 << " iterations: " << err << endl ;
-    	break;
-	}
-
-	if( k = kmax - 1 ){
-		//Se dopo k_max iterazioni l'errore � ancora grande --> Newton diverge:
-    	cout << "WARNING: Newton method does not converge in " << k+1 << " iterations!" << endl;
-	}
-}
-
 NavierStokes;
 
 // Plot del risultato:
-//plot( p , ps="Power.ps");
-//plot( [ux,uy,uz] , ps="FluidVelocity.ps");
+plot( p , ps="Power.ps");
+plot( [ux,uy,uz] , ps="FluidVelocity.ps");
