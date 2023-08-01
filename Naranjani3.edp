@@ -34,7 +34,7 @@ Qh rhoa = 1.293;
 macro grad(v) [dx(v), dy(v), dz(v)] //
 macro div(vx,vy,vz) (dx(vx) + dy(vy) + dz(vz)) //
 macro DivRho(vx,vy,vz,rho) ( grad(rho)' * [vx,vy,vz] + rho * div(vx,vy,vz) ) //
-macro u_gradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
+macro ugradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
 
 func h = 0*x + 0*y + 0*z + 1; // Dato al bordo di Neumann
 
@@ -57,8 +57,8 @@ problem linearizedNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 	
 	= int3d(Th)( 
 
-		    u_gradv( rhoa*ux, rhoa*uy, rhoa*uz, ux1, uy1, uz1)' * [vx,vy,vz] + 
-//		    u_gradv( ux, uy, uz, rhoa*ux1, rhoa*uy1, rhoa*uz1)' * [vx,vy,vz] +		
+		    ugradv( rhoa*ux, rhoa*uy, rhoa*uz, ux1, uy1, uz1)' * [vx,vy,vz] +
+//		    ugradv( ux, uy, uz, rhoa*ux1, rhoa*uy1, rhoa*uz1)' * [vx,vy,vz] +
 
 		     mu * ( grad(ux1)'*grad(vx) + grad(uy1)'*grad(vy) + grad(uz1)'*grad(vz) ) +
 	 	     mu * div(ux1,uy1,uz1) * div(vx,vy,vz) -
@@ -66,7 +66,7 @@ problem linearizedNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 		     DivRho(ux1, uy1, uz1, rhoa) * q)
 
 	- int3d(Th)( rhoa * (-g) * vz )	
-//		   + u_gradv( ux, uy, uz, ux, uy, uz) )  
+//		   + ugradv( ux, uy, uz, ux, uy, uz) )
 
 	+ on(2,4,5,6, ux1 = 0 , uy1 = 0 , uz1 = 0 )
 	+ on(1, ux1 = uMax , uy1 = 0 , uz1 = 0 )
