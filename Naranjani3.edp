@@ -1,10 +1,12 @@
-load "msh3"
+load "msh3" // Tool per generare la mesh 3d
 load "medit" // Tool per plottare la mesh
+load "mshmet" // Tool per plottare
+
 
 
 //Data
 real mu=1.825*10^(-5); //a 20C da internet
-//real rhoa=1.293; // da internet
+// real rhoa=1.293; // da internet
 real g=9.81; //gravitational acceleration
 real uMax = 10. ;// Inlet boundary velocity (for Dirichlet condition)
 
@@ -36,7 +38,7 @@ macro div(vx,vy,vz) (dx(vx) + dy(vy) + dz(vz)) //
 macro DivRho(vx,vy,vz,rho) ( grad(rho)' * [vx,vy,vz] + rho * div(vx,vy,vz) ) //
 macro ugradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
 
-func h = 0*x + 0*y + 0*z + 1; // Dato al bordo di Neumann
+func h = 0; // Dato al bordo di Neumann
 
 // Problema di Stokes (lineare) per inizializzare il metodo di Newton:
 problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
@@ -49,42 +51,38 @@ problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
 	- int3d(Th)( rhoa * (-g) * vz ) // r.h.s. della weak formulation
 
 	+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) // Dirichlet BCs sulle pareti laterali (wall)
-	+ on(1, ux = uMax , uy = 0 , uz = 0 ) //Dirichlet BCs sulla faccia 1 (inflow)
-	+ int2d(Th,3)( h*vy ) // Neumann BCs sulla faccia 3 (outflow) ;
+	+ on(1, ux = 0 , uy = uMax , uz = 0 ) //Dirichlet BCs sulla faccia 1 (inflow)
+	+ int2d(Th,3)( h*vy ); // Neumann BCs sulla faccia 3 (outflow)
 
 // Navier Stokes linearizzato:
 problem linearizedNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 	
 	= int3d(Th)( 
 
-		    ugradv( rhoa*ux, rhoa*uy, rhoa*uz, ux1, uy1, uz1)' * [vx,vy,vz] +
-//		    ugradv( ux, uy, uz, rhoa*ux1, rhoa*uy1, rhoa*uz1)' * [vx,vy,vz] +
+		    rhoa * ugradv(ux,uy,uz,ux1,uy1,uz1)' * [vx,vy,vz] +
 
 		     mu * ( grad(ux1)'*grad(vx) + grad(uy1)'*grad(vy) + grad(uz1)'*grad(vz) ) +
 	 	     mu * div(ux1,uy1,uz1) * div(vx,vy,vz) -
 		     div(vx,vy,vz) * p1 +
 		     DivRho(ux1, uy1, uz1, rhoa) * q)
 
-	- int3d(Th)( rhoa * (-g) * vz )	
-//		   + ugradv( ux, uy, uz, ux, uy, uz) )
+	- int3d(Th)( rhoa * (-g) * vz )
 
 	+ on(2,4,5,6, ux1 = 0 , uy1 = 0 , uz1 = 0 )
-	+ on(1, ux1 = uMax , uy1 = 0 , uz1 = 0 )
+	+ on(1, ux1 = 0 , uy1 = uMax , uz1 = 0 )
 	+ int2d(Th,3)( h*vy ) ;
 
 
 // Risoluzione del problema non-lineare usando Newton:
 
-real toll = 1e-09 // Tolleranza per la variazione dell'errore (della fluid velocity u)
-int k_max = 15 // Numero massimo di iterazioni per capire se Newton diverge
+real toll = 1e-09; // Tolleranza per la variazione dell'errore (della fluid velocity u)
+int kmax = 15; // Numero massimo di iterazioni per capire se Newton diverge
 
 macro NavierStokes(){
-	int k;
-	real err = 0; // Inizializzo l'errore a 0
+
+	Stokes; // Inizializzo il ciclo risolvendo Stokes (lineare):
 	
-	linearized_NS // Inizializzo il ciclo risolvendo Stokes (lineare):
-	
-	for( k = 0 ; k < k_max ; k++ ) {
+	for( int k = 0 ; k < kmax ; k++ ) {
 	
 	linearizedNS; // Risolvo u_k+1 usando NS linearizzato
 	
@@ -92,26 +90,29 @@ macro NavierStokes(){
 	dux[] = ux1[] - ux[];
 	duy[] = uy1[] - uy[];
 	duz[] = uz1[] - uz[];
-	err = sqrt( int3d(Th) ( grad(dux)'*grad(dux) + grad(duy)'*grad(duy) + grad(duz)'*grad(duz) ) ) /
+	real err = sqrt( int3d(Th) ( grad(dux)'*grad(dux) + grad(duy)'*grad(duy) + grad(duz)'*grad(duz) ) ) /
 		sqrt( int3d(Th) ( grad(ux)'*grad(ux) + grad(uy)'*grad(uy) + grad(uz)'*grad(uz) ) );
 	
 	// Aggiorno fluid velocity:
 	ux[] = ux1[];
 	uy[] = uy1[];
 	uz[] = uz1[];
+	p[] = p1[];
 
-	if( err < toll ) break;
+	if( err < toll ){
+		// Stampo l'errore dopo l'ultima iterazione:
+    	cout << "Error after " << k+1 << " iterations: " << err << endl ;
+    	break;
 	}
 
-	//Se dopo k_max iterazioni l'errore � ancora grande --> Newton diverge:
-	if( err > toll ) cout << "WARNING: Newton method does not converge in " << k+1 << " iterations!" << endl;  
-
-	// Stampo l'errore dopo l'ultima iterazione:
-	cout << "Error after " << k+1 << " iterations: " << err << endl ;
+	if( k = kmax - 1 ){
+		//Se dopo k_max iterazioni l'errore � ancora grande --> Newton diverge:
+    	cout << "WARNING: Newton method does not converge in " << k+1 << " iterations!" << endl;
+	}
 }
 
 NavierStokes;
 
 // Plot del risultato:
-plot( p , cmm='Power');
-plot( [ux,uy,uz] , cmm='Fluid Velocity');
+//plot( p , ps="Power.ps");
+//plot( [ux,uy,uz] , ps="FluidVelocity.ps");
