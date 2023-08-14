@@ -1,0 +1,11 @@
+include Naranjani_newton
+fespace H(Th, P1)
+macro grad(v) [dx(v), dy(v), dz(v)] //
+H to=25, h=0;
+
+problem energy (T, tau)
+    = int3d(Th)(u'*grad(T)*tau + lamba*grad(T)'*grad(tau))
+    -int2(Th)(lambda*h*tau)
+    +on(1, T=to);
+
+energy;
