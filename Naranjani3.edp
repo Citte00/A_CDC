@@ -10,7 +10,7 @@ real uMax = 10. ;// Inlet boundary velocity (for Dirichlet condition)
 
 //Mesh Generation
 real L = 1;
-mesh3 Th = cube(20, 20, 20, [L*x,L*y,L*z]);
+mesh3 Th = cube(5, 5, 5, [L*x,L*y,L*z]);
 medit("Mesh", Th);
 // Su "FreeFem Documentation" ho trovato che le labels di default per le facce sono:
 // 1: y=0 , 2: x=1 , 3: y=1 , 4: x=0 , 5: z=0 , 6: z=1
@@ -76,32 +76,28 @@ real toll = 1e-09; // Tolleranza per la variazione dell'errore (della fluid velo
 int kmax = 15; // Numero massimo di iterazioni per capire se Newton diverge
 
 macro NavierStokes(){
-	Stokes; // Inizializzo il ciclo risolvendo Stokes (lineare)
+	Stokes;
 
 	for(int k = 0 ; k < kmax ; k++ ){
 
-	    linNS; // Risolvo u_k+1 usando NS linearizzato
+	    linNS;
 
-	    // Calcolo l'errore all'iterazione k+1:
 	    dux[] = ux1[] - ux[];
 	    duy[] = uy1[] - uy[];
 	    duz[] = uz1[] - uz[];
 	    real err = sqrt( int3d(Th) ( grad(dux)'*grad(dux) + grad(duy)'*grad(duy) + grad(duz)'*grad(duz) ) ) /
 		    sqrt( int3d(Th) ( grad(ux)'*grad(ux) + grad(uy)'*grad(uy) + grad(uz)'*grad(uz) ) );
 
-	    // Aggiorno fluid velocity:
 	    ux[] = ux1[];
 	    uy[] = uy1[];
 	    uz[] = uz1[];
 	    p[] = p1[];
 
 	    if( err < toll ){
-		    // Stampo l'errore dopo l'ultima iterazione:
     	    cout << "Error after " << k+1 << " iterations: " << err << endl ;
     	    break;
 	    }
 
-	    //Se dopo k_max iterazioni l'errore e' ancora grande --> Newton diverge:
 	    if( k == kmax - 1 )
     	    cout << "WARNING: Newton method does not converge in " << kmax << " iterations!" << endl;
 	}
