@@ -109,3 +109,4 @@ NavierStokes;
 // Plot del risultato:
 plot( p , ps="Power.ps");
 plot( [ux,uy,uz] , ps="FluidVelocity.ps");
+
