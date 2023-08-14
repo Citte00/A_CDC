@@ -1,0 +1,20 @@
+include Naranjani_newton
+fespace M(Th, P1)
+macro grad(v) [dx(v), dy(v), dz(v)] //
+M h2oinit=0.4, co2init=0.3; //da sistemare
+M h2o, co2, h, c;
+real Rh2o=0, Rco2=0, Sh2o=0, Sco2=0; //da sistemare
+
+problem massH2O (h2o, h)
+    = int3d(Th)(rhoa*u'*grad(h2o)*h )
+    -int3d(Th)(Rh2o*h+Sh2o*h);
+    //BC ?
+
+massH2O;
+
+problem massCO2 (co2, c)
+    = int3d(Th)(rhoa*u'*grad(co2)*c )
+    -int3d(Th)(Rco2*c+Sco2*c);
+    //BC ?
+
+massCO2;
