@@ -44,13 +44,13 @@ problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
 	= int3d(Th)( mu * ( grad(ux)'*grad(vx) + grad(uy)'*grad(vy) + grad(uz)'*grad(vz) ) +
 		     mu * div(ux,uy,uz) * div(vx,vy,vz) -
              div(vx,vy,vz) * p +
-		     DivRho(ux, uy, uz, rhoa) * q ) // l.h.s. della weak formulation
+		     DivRho(ux, uy, uz, rhoa) * q ) /* l.h.s. della weak formulation */
 	
-	- int3d(Th)( rhoa * (-g) * vz ) // r.h.s. della weak formulation
+	- int3d(Th)( rhoa * (-g) * vz ) /* r.h.s. della weak formulation */
 
-	+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) // Dirichlet BCs sulle pareti laterali (wall)
-	+ on(1, ux = 0 , uy = uIn , uz = 0 ) //Dirichlet BCs sulla faccia 1 (inflow)
-	+ int2d(Th,3)( h*vy ); // Neumann BCs sulla faccia 3 (outflow)
+	+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) /* Dirichlet BCs sulle pareti laterali (wall) */
+	+ on(1, ux = 0 , uy = uIn , uz = 0 ) /* Dirichlet BCs sulla faccia 1 (inflow) */
+	+ int2d(Th,3)( h*vy ); /* Neumann BCs sulla faccia 3 (outflow) */
 
 // Navier Stokes linearizzato:
 problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
