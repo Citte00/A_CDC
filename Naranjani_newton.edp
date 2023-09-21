@@ -2,10 +2,10 @@ load "msh3" // Tool per generare la mesh 3d
 load "medit" // Tool per plottare la mesh
 
 //Data
-real mu=1.825*10^(-5); //a 20C da internet
-// real rhoa=1.293; // da internet
-real g=9.81; //gravitational acceleration
-real uMax = 10. ;// Inlet boundary velocity (for Dirichlet condition)
+real mu = 1; //a 20C da internet
+// real rhoa = 1; // da internet
+real g = 9.81; //gravitational acceleration
+real uMax = 1;// Inlet boundary velocity (for Dirichlet condition)
 
 
 //Mesh Generation
@@ -17,7 +17,6 @@ medit("Mesh", Th);
 // Dunque nel nostro caso abbiamo che: {2,4,5,6} = wall; 1 = inflow boundary ; 3 = outflow boundary
 // Si potrebbe (in futuro) inserire un labeling delle facce da usare nella formulazione del problema, per maggiore chiarezza
 
-
 //Finite Elements Spaces:
 fespace Vh(Th, [P2, P2, P2]);
 Vh [ux,uy,uz] , [vx,vy,vz] ; //Fluid velocity, test function
@@ -26,8 +25,7 @@ Vh [ux1,uy1,uz1] , [dux,duy,duz] ; //Fluid Velocity all'iterazione successiva, v
 fespace Qh(Th, P1);
 Qh p , q ; // Potenza e test function
 Qh p1 ; // Potenza all'iterazione successiva
-Qh rhoa = 1.293;
-
+Qh rhoa = 1;
 
 //Macro
 macro grad(v) [dx(v), dy(v), dz(v)] //
@@ -70,7 +68,6 @@ problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 	+ on(1, ux1 = 0 , uy1 = uIn , uz1 = 0 )
 	+ int2d(Th,3)( h*vy );
 
-
 // Macro contenente ciclo di Newton per la risoluzione:
 real toll = 1e-09; // Tolleranza per la variazione dell'errore (della fluid velocity u)
 int kmax = 15; // Numero massimo di iterazioni per capire se Newton diverge
@@ -78,7 +75,7 @@ int kmax = 15; // Numero massimo di iterazioni per capire se Newton diverge
 macro NavierStokes(){
 	Stokes;
 
-	for(int k = 0 ; k < kmax ; k++ ){
+	for(int k = 0; k < kmax; k++){
 
 	    linNS;
 
@@ -107,6 +104,5 @@ macro NavierStokes(){
 NavierStokes;
 
 // Plot del risultato:
-plot( p , ps="Power.ps");
-plot( [ux,uy,uz] , ps="FluidVelocity.ps");
-
+plot(p, ps = "Power.eps", value=1, fill=1);
+plot([ux,uy,uz], ps = "FluidVelocity.eps", value=1, coef=.05);
