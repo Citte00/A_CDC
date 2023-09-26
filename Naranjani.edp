@@ -2,7 +2,8 @@
 load "msh3"
 
 //data
-real mu=1.825*10^(-5); //a 20C da internet
+//real mu=1.825*10^(-5); //a 20C da internet
+real mu=1;
 real rhoa=1.293; // da internet
 real g=9.81; //gravitational acceleration
 real input=1;
@@ -13,17 +14,21 @@ mesh3 Th = cube(2, 2, 2, [L*x, L*y, L*z]);
 
 
 //Finite Element 
-fespace VVh(Th,[P23d,P23d,P23d,P13d]); //siamo in 3d, prendiamo elementi P2 per la velocita', P1 per la pressione
-fespace Vh(Th,P23d);
-fespace Ph(Th,P13d);
+fespace VVh(Th,[P2,P2,P2,P1]); //siamo in 3d, prendiamo elementi P2 per la velocita', P1 per la pressione
+fespace Vh(Th,P2);
+fespace Ph(Th,P1);
 Vh w=0;
 macro Grad(u) [dx(u),dy(u),dz(u)] //EOM
 macro div(u1,u2,u3) (dx(u1)+dy(u2)+dz(u3)) //EOM
+
     varf vStokes([u1,u2,u3,p],[v1,v2,v3,q]) = 
-    int3d(Th,qforder=3)( Grad(u1)'*Grad(v1) +  Grad(u2)'*Grad(v2) +  Grad(u3)'*Grad(v3)
-             - div(u1,u2,u3)*q - div(v1,v2,v3)*p + 1e-10*q*p ) 
-    +  on(2,4,5,6, u1=0.,u2=0,u3= 0)
-    + on(1, u1=input,u2=0,u3=0)
+    int3d(Th)( mu*(Grad(u1)'*Grad(v1) +  Grad(u2)'*Grad(v2) +  Grad(u3)'*Grad(v3))
+            + mu * div(u1,u2,u3) * div(v1,v2,v3) 
+            - div(u1,u2,u3)*q - div(v1,v2,v3)*p + 1e-10*q*p )   /* l.h.s. della weak formulation */
+            - int3d(Th)( rhoa * (-g) * v3 ) /* r.h.s. della weak formulation */
+            + int2d(Th,3)( w*v2 ) /* Neumann BCs sulla faccia 3 (outflow) */
+    + on(2,4,5,6, u1=0.,u2=0,u3= 0) /* Dirichlet BCs sulle pareti laterali (wall) */
+    + on(1, u1=input,u2=0,u3=0) /* Dirichlet BCs sulla faccia 1 (inflow) */
     ;
 
 matrix A=vStokes(VVh,VVh);
@@ -34,20 +39,23 @@ VVh [u1,u2,u3,p];
 VVh [X1,X2,X3,Xp];
 VVh [x1,x2,x3,xp]=[x,y,z,0];
 
-macro UgradV(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*[dx(vx),dy(vx),dz(vx)] , [ux,uy,uz]'*[dx(vy),dy(vy),dz(vy)], [ux,uy,uz]'*[dx(vz),dy(vz),dz(vz)]]// EOM
+macro Grad(u) [dx(u),dy(u),dz(u)] //EOM
+macro UgradV(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*Grad(vx) , [ux,uy,uz]'*Grad(vy), [ux,uy,uz]'*Grad(vz)]// EOM
 
     varf vNS ([u1,u2,u3,p],[v1,v2,v3,q]) = 
     int3d (Th) (mu*(Grad(u1)'*Grad(v1) +  Grad(u2)'*Grad(v2) +  Grad(u3)'*Grad(v3)) 
-    //+ rhoa*u2*(dy(u1)*v1 + dy(u2)*v2 + dy(u3)*v3) + rhoa*u1*(dx(u1)*v1 + dx(u2)*v2 + dx(u3)*v3) + rhoa*u3*(dz(u1)*v1 + dz(u2)*v2 + dz(u3)*v3)
-    + UgradV(u1,u2,u3,u1,u2,u3)'*[v1,v2,v3]
-    - rhoa*div(u1,u2,u3)*q - div(v1,v2,v3)*p + 1e-10*q*p) 
-    - int3d (Th) (rhoa*g*v3)- int2d(Th) (w*v)
+        //+ rhoa*u2*(dy(u1)*v1 + dy(u2)*v2 + dy(u3)*v3) + rhoa*u1*(dx(u1)*v1 + dx(u2)*v2 + dx(u3)*v3) + rhoa*u3*(dz(u1)*v1 + dz(u2)*v2 + dz(u3)*v3)
+        + rhoa* UgradV(u1,u2,u3,u1,u2,u3)'*[v1,v2,v3]
+        + mu * div(u1,u2,u3) * div(v1,v2,v3)
+        - rhoa*div(u1,u2,u3)*q - div(v1,v2,v3)*p + 1e-10*q*p) 
+    - int3d (Th) (rhoa*(-g)*v3)- int2d(Th, 3) (w*v)
     + on (2,4,5,6, u1=0, u2=0, u3=0)
     + on (1, u1=input, u2=0, u3=0)
     ;
     // (Grad(u1)'*[v1, v2, v3]+ u2*Grad(u2)'*[v1, v2, v3]+ u3* Grad(u3)'*[v1, v2, v3])
     // Le BC di Neumann vengono imposte direttamente nella formulazione debole (impongo w)
     //oppure usando buildlayers (?)
+
 
 //qforder e' un parametro per la formula di quadratura
 //abbiamo aggiunto il termine di stabilizzazione
