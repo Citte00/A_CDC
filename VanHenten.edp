@@ -38,16 +38,17 @@ real fphotmaxn = epsilon * Upar * gCO2 * comega * (gammaCO2 - Gamma);   //numera
 real fphotmaxd = epsilon * Upar + gCO2 * comega * (gammaCO2 - Gamma);   //denominator of f_phot_max
 real fphotmax  = fphotmaxn / fphotmaxd;                                 //gross carbon dioxide assimilation rate of the canopy (g * m^-2 * s^-1)
 
-real t0 = 0.;
-real tmax = 86400*20.; //secondi in un giorno*20 giorni
-real dt = 2*60*60;
-real N=(tmax - t0)*dt;
+int t0 = 0;
+int tmax = 86400*20; //secondi in un giorno*20 giorni
+int dt = 24*60*60;
+int N=(tmax - t0)/dt;
 
-real Nmax = 1000;
-real toll = 1e-9;
 
-real Xsdw = 1;
-real Xnsdw = 1;
+real Nmax = 100;
+real toll = 1e-3;
+
+real Xnsdw = 0.00675;
+real Xsdw = 0.00225;
 
 //gross canopy photosynthesis (g * m^-2 * s^-1)
 func real fphot(real xsdw){ return (1 - exp(-ck*clar*(1 - ctau) * xsdw)) * fphotmax; };
@@ -74,6 +75,11 @@ func real phi2(real Xsdwnew, real xnsdw){
     return Xsdw + dt/2 * (f2(xnsdw, Xsdw)  + f2(xnsdw, Xsdwnew));
 };
 
+int[int] T(N);
+real[int] vectNSDW(N);
+real[int] vectSDW(N);
+
+
 for(int i = 0.; i < N; ++i){
     int j = 0;
     real err1 = toll + 1;
@@ -94,11 +100,32 @@ for(int i = 0.; i < N; ++i){
 
     Xnsdw = w1;
     Xsdw = v1;
+    vectNSDW[i]=Xnsdw;
+    vectSDW[i]=Xsdw;
+    T[i]=t0+i*dt;
 }
 
 cout << "X_nsdw = " << Xnsdw << endl;
 cout << "X_sdw = " << Xsdw << endl;
 
+
+//plot([T,vectNSDW], wait=true);
+
+/* ofstream gnu("plotNSDW.gp");
+for (int i = 0; i < N; i++)
+    gnu << T[i] << " " << vectNSDW[i] << endl;
+
+//exec("echo 'plot \"plotNSDW.gp\" w l \n pause 5 \n set term postscript \n set output \"gnuplot.eps\" \n replot \n quit' | gnuplot");
+*/
+ofstream gnu("plot.gp");
+for (int i = 0; i < N; i++)
+    gnu << T[i] << " " << vectSDW[i] << endl;
+
+//exec("echo 'plot \"plotSDW.gp\" w l \n pause 5 \n set term postscript \n set output \"gnuplot.eps\" \n replot \n quit' | gnuplot");
+
+
+
+//plot([T,vectSDW], ps="SDWplot.eps");
 //ofstream file("result.txt");
 //file << "X_nsdw = " << Xnsdw << "\n";
 //file << "X_sdw = " << Xsdw << "\n";
