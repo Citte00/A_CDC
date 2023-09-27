@@ -7,6 +7,7 @@ real cgrMax   = 5e-6;            //saturation growth rate at 20°C (s^-1)
 real cgamma   = 0.8;             //should have a value between 0.5-1.0
 real cQ10gr   = 1.6;             //Q10 factor for growth
 real Tc       = 20;              //canopy temperature, valore prova (°C)
+//Tc=21.2 di giorno e Tc=20.8 di notte
 
 //constants for f_resp equation
 real ctau     = 0.15;            //ratio of the root dry weigth and the total dry weigth
@@ -38,15 +39,15 @@ real fphotmaxd = epsilon * Upar + gCO2 * comega * (gammaCO2 - Gamma);   //denomi
 real fphotmax  = fphotmaxn / fphotmaxd;                                 //gross carbon dioxide assimilation rate of the canopy (g * m^-2 * s^-1)
 
 real t0 = 0.;
-real tmax = 20.;
-real N = 100.;
-real dt = (tmax - t0) / N;
+real tmax = 86400*20.; //secondi in un giorno*20 giorni
+real dt = 2*60*60;
+real N=(tmax - t0)*dt;
 
 real Nmax = 1000;
 real toll = 1e-9;
 
-real Xsdw = 1e-5;
-real Xnsdw = 3e-7;
+real Xsdw = 1;
+real Xnsdw = 1;
 
 //gross canopy photosynthesis (g * m^-2 * s^-1)
 func real fphot(real xsdw){ return (1 - exp(-ck*clar*(1 - ctau) * xsdw)) * fphotmax; };
@@ -98,6 +99,6 @@ for(int i = 0.; i < N; ++i){
 cout << "X_nsdw = " << Xnsdw << endl;
 cout << "X_sdw = " << Xsdw << endl;
 
-ofstream file("result.txt");
-file << "X_nsdw = " << Xnsdw << "\n";
-file << "X_sdw = " << Xsdw << "\n";
+//ofstream file("result.txt");
+//file << "X_nsdw = " << Xnsdw << "\n";
+//file << "X_sdw = " << Xsdw << "\n";
