@@ -2,14 +2,15 @@ load "msh3" // Tool per generare la mesh 3d
 load "medit" // Tool per plottare la mesh
 
 //Data
-real mu = 1; //a 20C da internet
-// real rhoa = 1; // da internet
+real L = 1;
+real mu = 1e-1; //a 20C da internet
+real rhoa = 1.29; // da internet kg*m^(-3)
 real g = 9.81; //gravitational acceleration
-real uMax = 1;// Inlet boundary velocity (for Dirichlet condition)
-
+real U = 0.5;// Characteristic velocity and inlet boundary velocity (for Dirichlet condition)
+real Re=rhoa*U*L/mu; //Reynolds number
+cout<<"Re: "<<Re<<endl;
 
 //Mesh Generation
-real L = 1;
 mesh3 Th = cube(5, 5, 5, [L*x,L*y,L*z]);
 medit("Mesh", Th);
 // Su "FreeFem Documentation" ho trovato che le labels di default per le facce sono:
@@ -23,28 +24,28 @@ Vh [ux,uy,uz] , [vx,vy,vz] ; //Fluid velocity, test function
 Vh [ux1,uy1,uz1] , [dux,duy,duz] ; //Fluid Velocity all'iterazione successiva, variazione tra un'iterazione e l'altra
 
 fespace Qh(Th, P1);
-Qh p , q ; // Potenza e test function
-Qh p1 ; // Potenza all'iterazione successiva
-Qh rhoa = 1;
+Qh p , q ; // pressione e test function
+Qh p1 ; // pressione all'iterazione successiva
+//Qh rhoa = 1;
 
 //Macro
 macro grad(v) [dx(v), dy(v), dz(v)] //
 macro div(vx,vy,vz) ( dx(vx) + dy(vy) + dz(vz) ) //
-macro DivRho(vx,vy,vz,rho) ( grad(rho)' * [vx,vy,vz] + rho * div(vx,vy,vz) ) //
+//macro DivRho(vx,vy,vz,rho) ( grad(rho)' * [vx,vy,vz] + rho * div(vx,vy,vz) ) //
 macro ugradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
 
 func h = 0; // Dato al bordo di Neumann
-func uIn = uMax; // Dato al bordo Dirichlet
+func uIn = U; // Dato al bordo Dirichlet
 
 // Problema di Stokes (lineare) per inizializzare il metodo di Newton:
 problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
 
-	= int3d(Th)( mu * ( grad(ux)'*grad(vx) + grad(uy)'*grad(vy) + grad(uz)'*grad(vz) ) +
-		     mu * div(ux,uy,uz) * div(vx,vy,vz) -
-             div(vx,vy,vz) * p +
-		     DivRho(ux, uy, uz, rhoa) * q ) /* l.h.s. della weak formulation */
+	= int3d(Th)(  1/Re*(grad(ux)'*grad(vx) + grad(uy)'*grad(vy) + grad(uz)'*grad(vz) ) 
+		     /* + mu * div(ux,uy,uz) * div(vx,vy,vz) */
+			 - div(vx,vy,vz) * p 
+		     + div(ux, uy, uz) * q ) /* l.h.s. della weak formulation */
 	
-	- int3d(Th)( rhoa * (-g) * vz ) /* r.h.s. della weak formulation */
+	- int3d(Th)( (-g) * vz ) /* r.h.s. della weak formulation */
 
 	+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) /* Dirichlet BCs sulle pareti laterali (wall) */
 	+ on(1, ux = 0 , uy = uIn , uz = 0 ) /* Dirichlet BCs sulla faccia 1 (inflow) */
@@ -55,14 +56,13 @@ problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 	
 	= int3d(Th)( 
 
-		    rhoa * ugradv(ux,uy,uz,ux1,uy1,uz1)' * [vx,vy,vz] +
+		    ugradv(ux,uy,uz,ux1,uy1,uz1)' * [vx,vy,vz] +
 
-		     mu * ( grad(ux1)'*grad(vx) + grad(uy1)'*grad(vy) + grad(uz1)'*grad(vz) ) +
-	 	     mu * div(ux1,uy1,uz1) * div(vx,vy,vz) -
+		     1/Re* ( grad(ux1)'*grad(vx) + grad(uy1)'*grad(vy) + grad(uz1)'*grad(vz) ) -
 		     div(vx,vy,vz) * p1 +
-		     DivRho(ux1, uy1, uz1, rhoa) * q )
+		     div(ux1, uy1, uz1) * q )
 
-	- int3d(Th)( rhoa * (-g) * vz )
+	- int3d(Th)( (-g) * vz )
 
 	+ on(2,4,5,6, ux1 = 0 , uy1 = 0 , uz1 = 0 )
 	+ on(1, ux1 = 0 , uy1 = uIn , uz1 = 0 )
@@ -70,7 +70,7 @@ problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 
 // Macro contenente ciclo di Newton per la risoluzione:
 real toll = 1e-09; // Tolleranza per la variazione dell'errore (della fluid velocity u)
-int kmax = 15; // Numero massimo di iterazioni per capire se Newton diverge
+int kmax = 150; // Numero massimo di iterazioni per capire se Newton diverge
 
 macro NavierStokes(){
 	Stokes;
@@ -105,4 +105,4 @@ NavierStokes;
 
 // Plot del risultato:
 plot(p, ps = "Power.eps", value=1, fill=1);
-plot([ux,uy,uz], ps = "FluidVelocity.eps", value=1, coef=.05);
+//plot([ux,uy,uz], ps = "FluidVelocity.eps", value=1, coef=.05);
