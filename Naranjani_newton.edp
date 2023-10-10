@@ -3,10 +3,10 @@ load "medit" // Tool per plottare la mesh
 
 //Data
 real L = 1;
-real mu = 1e-1; //a 20C da internet
+real mu = 1.5e-5; //a 20C da internet
 real rhoa = 1.29; // da internet kg*m^(-3)
 real g = 9.81; //gravitational acceleration
-real U = 0.5;// Characteristic velocity and inlet boundary velocity (for Dirichlet condition)
+real U = 0.3;// Characteristic velocity and inlet boundary velocity (for Dirichlet condition)
 real Re=rhoa*U*L/mu; //Reynolds number
 cout<<"Re: "<<Re<<endl;
 
@@ -40,8 +40,7 @@ func uIn = U; // Dato al bordo Dirichlet
 // Problema di Stokes (lineare) per inizializzare il metodo di Newton:
 problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
 
-	= int3d(Th)(  1/Re*(grad(ux)'*grad(vx) + grad(uy)'*grad(vy) + grad(uz)'*grad(vz) ) 
-		     /* + mu * div(ux,uy,uz) * div(vx,vy,vz) */
+	= int3d(Th)(  1/Re*(grad(ux)'*grad(vx) + grad(uy)'*grad(vy) + grad(uz)'*grad(vz) )
 			 - div(vx,vy,vz) * p 
 		     + div(ux, uy, uz) * q ) /* l.h.s. della weak formulation */
 	
@@ -57,8 +56,7 @@ problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 	= int3d(Th)( 
 
 		    ugradv(ux,uy,uz,ux1,uy1,uz1)' * [vx,vy,vz] +
-
-		     1/Re* ( grad(ux1)'*grad(vx) + grad(uy1)'*grad(vy) + grad(uz1)'*grad(vz) ) -
+			1/Re* ( grad(ux1)'*grad(vx) + grad(uy1)'*grad(vy) + grad(uz1)'*grad(vz) ) -
 		     div(vx,vy,vz) * p1 +
 		     div(ux1, uy1, uz1) * q )
 
@@ -69,7 +67,7 @@ problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 	+ int2d(Th,3)( h*vy );
 
 // Macro contenente ciclo di Newton per la risoluzione:
-real toll = 1e-09; // Tolleranza per la variazione dell'errore (della fluid velocity u)
+real toll = 1e-07; // Tolleranza per la variazione dell'errore (della fluid velocity u)
 int kmax = 150; // Numero massimo di iterazioni per capire se Newton diverge
 
 macro NavierStokes(){
@@ -91,7 +89,7 @@ macro NavierStokes(){
 	    p[] = p1[];
 
 	    if( err < toll ){
-    	    cout << "Error after " << k+1 << " iterations: " << err << endl ;
+    	    cout << "Value of the error after " << k+1 << " iterations: " << err << endl ;
     	    break;
 	    }
 
