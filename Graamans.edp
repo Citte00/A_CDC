@@ -12,10 +12,10 @@ Rnet = (1 - rhor) * Ilight * CAC;
 cout << "R_net = " << Rnet << endl;
 
 // H equation
-real rhoa = 1.225;                                 // density of air (std value)
-real Cp = 1030;                                    // specific heat (std value)
-real Tc = 21;                                      // temperature at the transpiring surface (Tc - Ta = 1)
-real Ta = 20;                                      // temperature in the surrounding air
+//real rhoa = 1.225;                                 // density of air (std value)
+//real Cp = 1030;                                    // specific heat (std value)
+//real Tc = 21;                                      // temperature at the transpiring surface (Tc - Ta = 1)
+real Ta = Tc-1;                                      // temperature in the surrounding air
 real PPFD = 600;                                   // photosynthetic photon flux densities
 real l = 0.11;                                     // mean leaf diameter
 real uinf = 50;                                    // uninhibited air speed
@@ -23,21 +23,22 @@ real LAI = 3;                                      // leaf area index
 real ra = 305 * (l / uinf)^(1/2) / LAI;            // aerodynamic resistance to heat
 real rs = 60 * (1500 + PPFD) / (200 + PPFD);       // surface resistance
 
-H = LAI * rhoa * Cp * (Ts - Ta) / ra;
+H = LAI * rhoa * Cp / ra;
 cout << "H = " << H << endl;
 
 
 // lambda_E equation (the data are random)
-real epsilon = 0.5;             // vapour concentration
-real lambda = 0.;               // latent heat of the evaporation of water
-real gammaH2Oair = 0.17;        // vapour concentration in the surrounding air
-real gammaH2Osur = 0.23;        // vapour concentration at the transpiring surface
+real eps = 0.5;             // vapour concentration
+real lambdaH = 0.;               // latent heat of the evaporation of water
+//real gammaH2Oair = 0.17;        // vapour concentration in the surrounding air
+//real gammaH2Osur = 0.23;        // vapour concentration at the transpiring surface
 // this two values are obtained by the species mass fraction transport equation of Naranjani
 // Penman and Monteith give us the following relation between the two
-// gammaH2Osur = gammaH2Oair + rhoa * Cp * epsilon * (Ts - Ta)
+real gammaH2Oair = int3d(Th)(h2o*1e6)/int3d(Th)(1.0); 
+real gammaH2Osur = gammaH2Oair + rhoa * Cp * eps * (Tc - Ta);
 
-// lambdaE = LAI * lambda * (gammaH2Osur - gammaH2Oair) / (ra + rs);
+// lambdaE = LAI * lambdaH * (gammaH2Osur - gammaH2Oair) / (ra + rs);
 
 // our goal is to find lambda hence we can compute it by using R_net - H = lambda_e
-lambda = (ra + rs) * (Rnet - H) / (LAI * (gammaH2Osur - gammaH2Oair));
-cout << "lambda = " << lambda << endl;
+lambdaH = (ra + rs) * (Rnet - H) / (LAI * (gammaH2Osur - gammaH2Oair));
+cout << "lambda = " << lambdaH << endl;
