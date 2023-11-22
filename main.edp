@@ -128,8 +128,8 @@ cout << "X_sdw = " << Xsdw << endl;
 real fph=fphot(Xsdw);
 cout << "fphot = " << fph << endl;
 
-Sco2=fph;
-Sh2o=fph;
+Sco2=fph/1000;
+Sh2o=fph/1000;
 
 //plot([Time,vectNSDW], wait=true);
 
