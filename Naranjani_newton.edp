@@ -13,6 +13,38 @@ cout<<"Re: "<<Re<<endl;
 
 //Mesh Generation
 mesh3 Th = cube(10, 10, 10, [L*x,L*y,L*z]);
+mesh3 Crop = cube(10, 10, 10, [L*x,L*y,L*z]);
+
+mesh Mesh{
+
+border b1(s=0.,1.){x=L*s; y=0.; z=0.}
+border b2(s=0.,1.){x=L*s; y=1.; z=0.}
+border b3(s=0.,1.){x=0.; y=L*s; z=0.}
+border b4(s=0.,1.){x=1.; y=L*s; z=0.}
+border b5(s=0.,1.){x=0.; y=0.; z=L*s}
+border b6(s=0.,1.){x=1.; y=0.; z=L*s}
+border b7(s=0.,1.){x=0.; y=1.; z=L*s}
+border b8(s=0.,1.){x=1.; y=1.; z=L*s}
+border b9(s=0.,1.){x=L*s; y=0.; z=1.}
+border b10(s=0.,1.){x=L*s; y=1.; z=1.}
+border b11(s=0.,1.){x=0.; y=L*s; z=1.}
+border b12(s=0.,1.){x=1.; y=L*s; z=1.}
+
+border c1(s=0.,0.05){x=s+0.475; y=0.475; z=0.}
+border c2(s=0.,0.05){x=s+0.475; y=0.525; z=0.}
+border c3(s=0.,0.05){x=0.475; y=s+0.475; z=0.}
+border c4(s=0.,0.05){x=0.525; y=s+0.475; z=0.}
+border c5(s=0.,0.05){x=s+0.475; y=0.475; z=0.15}
+border c6(s=0.,0.05){x=s+0.475; y=0.525; z=0.15}
+border c7(s=0.,0.05){x=0.475; y=s+0.475; z=0.15}
+border c8(s=0.,0.05){x=0.525; y=s+0.475; z=0.15}
+border c9(s=0.,0.15){x=0.475; y=0.475; z=s}
+border c10(s=0.,0.15){x=0.475; y=0.525; z=s}
+border c11(s=0.,0.15){x=0.525; y=0.475; z=s}
+border c12(s=0.,0.15){x=0.525; y=0.525; z=s}
+
+}
+
 medit("Mesh", Th);
 savemesh(Th, "Mesh_cube.mesh");
 // Su "FreeFem Documentation" ho trovato che le labels di default per le facce sono:
@@ -109,8 +141,6 @@ int[int] ord3=[1, 1, 1];
 savevtk("Pressure.vtk", Th, p, dataname="Pressure", order=ord);
 savevtk("Velocity.vtk", Th, [ux, uy, uz], dataname="Velocity", order=ord3);
 
-
-
 func to=25; //da sistemare
 Qh T, tau;
 real Cp=1012; //specific heat capacity of air 
@@ -127,17 +157,18 @@ energy;
 int[int] ordT=[1];
 savevtk("Temperature.vtk", Th, T, dataname="Temperature", order=ordT);
 
-
-
 func h2oinit=0.85; // dal paper
 func co2init=0.153; //dal paper
 Qh h2o, co2, hv, c;
 real Rh2o=0, Rco2=0; //reaction term, always zero (in our model)
 
+// Definition of source term:
+Sn =
 
 problem massH2O (h2o, hv)
     = int3d(Th)(rhoa*[ux, uy, uz]'*grad(h2o)*hv )
-    -int3d(Th)(Rh2o*hv+Sh2o*hv)
+    - int3d(Th)(Rh2o*hv+Sh2o*hv)
+    - int3d()()
 	 +on(1, h2o=h2oinit);
     //BC ?
 
@@ -145,7 +176,6 @@ massH2O;
 //cout<<"h2o mass fraction: "<<h2o<<endl;
 int[int] ordh=[1];
 savevtk("massh2o.vtk", Th, h2o, dataname="Mass_h2o", order=ordh);
-
 
 problem massCO2 (co2, c)
     = int3d(Th)(rhoa*[ux, uy, uz]'*grad(co2)*c )
