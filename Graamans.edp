@@ -1,7 +1,6 @@
 // parameters for the energy balance equation for a transpiring plant surface
 real Rnet = 0.;        // net radiation, amount of radiation intercepted and absorbed by the crop
 real H = 0.;            // sensible heat exchange
-real lambdaE = 0.;     // latent heat exchange
 
 // R_net equation
 real rhor = 0.05;      // reflection coefficient
@@ -32,9 +31,10 @@ real eps = 0.5;             // vapour concentration
 real lambdaH = 0.;               // latent heat of the evaporation of water
 //real gammaH2Oair = 0.17;        // vapour concentration in the surrounding air
 //real gammaH2Osur = 0.23;        // vapour concentration at the transpiring surface
+
 // this two values are obtained by the species mass fraction transport equation of Naranjani
 // Penman and Monteith give us the following relation between the two
-real gammaH2Oair = int3d(Th)(h2o*1e6)/int3d(Th)(1.0); 
+real gammaH2Oair = int3d(Th)(rhoa * h2o * 1e-3)/int3d(Th)(1);
 real gammaH2Osur = gammaH2Oair + rhoa * Cp * eps * (Tc - Ta);
 
 // lambdaE = LAI * lambdaH * (gammaH2Osur - gammaH2Oair) / (ra + rs);

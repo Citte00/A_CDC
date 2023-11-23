@@ -1,5 +1,7 @@
 real Sh2o=0, Sco2=0; //valore iniziale, poi da modificare con la retroazione
 
+real lambdaE = 0.;     // latent heat exchange
+
 real Tc;
 real gammaCO2;
 //constants for the differential equations
@@ -10,7 +12,6 @@ real cbeta    = 0.8;             //respiratory and synthesis losses of non-struc
 real cgrMax   = 5e-6;            //saturation growth rate at 20°C (s^-1)
 real cgamma   = 0.8;             //should have a value between 0.5-1.0
 real cQ10gr   = 1.6;             //Q10 factor for growth
-
 
 //constants for f_resp equation
 real ctau     = 0.15;            //ratio of the root dry weigth and the total dry weigth
@@ -153,4 +154,5 @@ for (int i = 0; i < N; i++)
 //file << "X_sdw = " << Xsdw << "\n";
 
 include "Graamans.edp"
+lambdaE = Rnet - H;
 }
