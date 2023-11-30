@@ -72,7 +72,6 @@ for (int i = 0; i < N; i++)
 //exec("echo 'plot \"plotSDW.gp\" w l \n pause 5 \n set term postscript \n set output \"gnuplot.eps\" \n replot \n quit' | gnuplot");
 */
 
-
 //plot([Time,vectSDW], ps="SDWplot.eps");
 //ofstream file("result.txt");
 //file << "X_nsdw = " << Xnsdw << "\n";
