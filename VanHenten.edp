@@ -6,7 +6,7 @@ real cbeta    = 0.8;             //respiratory and synthesis losses of non-struc
 real cgrMax   = 5e-6;            //saturation growth rate at 20°C (s^-1)
 real cgamma   = 0.8;             //should have a value between 0.5-1.0
 real cQ10gr   = 1.6;             //Q10 factor for growth
-real Tc       = 20;              //canopy temperature, valore prova (°C)
+//real Tc       = 20;              //canopy temperature, valore prova (°C)
 //Tc=21.2 di giorno e Tc=20.8 di notte
 
 //constants for f_resp equation
@@ -19,7 +19,7 @@ real cQ10resp = 2;               //Q10 factor of the maintenance respiration
 real ck        = 0.9;            //extinction coefficient
 real clar      = 75e-3;          //structural leaf area (m^2 * g)
 real Upar      = 45;             //incident photosyntetically active radiation, dato fornito da Agricola Moderna (W * m^-2)
-real gammaCO2  = 800;            //concentration of CO2 in the greenhouse air (ppm), valore prova
+//real gammaCO2  = 800;            //concentration of CO2 in the greenhouse air (ppm), valore prova
 real comega    = 1.83e-3;        //estimated CO2 density at 15◦C temperature and ambient pressure (g * m^-3)
 real cGamma    = 40;             //CO2 compensation point at 20°C (ppm)
 real cQ10gamma = 2;              //Q10 value which accounts for the effect of temperature on Γ
@@ -43,9 +43,8 @@ int tmax = 86400*20; //secondi in un giorno*20 giorni
 int dt = 24*60*60;
 int N=(tmax - t0)/dt;
 
-
 real Nmax = 100;
-real toll = 1e-3;
+real toll2 = 1e-3;
 
 real Xnsdw = 0.00675;
 real Xsdw = 0.00225;
@@ -74,58 +73,3 @@ func real phi1(real Xnsdwnew, real xsdw){
 func real phi2(real Xsdwnew, real xnsdw){
     return Xsdw + dt/2 * (f2(xnsdw, Xsdw)  + f2(xnsdw, Xsdwnew));
 };
-
-int[int] T(N);
-real[int] vectNSDW(N);
-real[int] vectSDW(N);
-
-
-for(int i = 0.; i < N; ++i){
-    int j = 0;
-    real err1 = toll + 1;
-    real err2 = toll + 1;
-    real w0 = phi1(Xnsdw, Xsdw);
-    real v0 = phi2(Xsdw, Xnsdw);
-    real w1 = 0.;
-    real v1 = 0.;
-    while(((err1 > toll) || (err2 > toll)) && (j < Nmax)){
-        w1 = phi1(w0, v0);
-        v1 = phi2(v0, w0);
-        err1 = abs(w1 - w0);
-        err2 = abs(v1 - v0);
-        w0 = w1;
-        v0 = v1;
-        j++;
-    }
-
-    Xnsdw = w1;
-    Xsdw = v1;
-    vectNSDW[i]=Xnsdw;
-    vectSDW[i]=Xsdw;
-    T[i]=t0+i*dt;
-}
-
-cout << "X_nsdw = " << Xnsdw << endl;
-cout << "X_sdw = " << Xsdw << endl;
-
-
-//plot([T,vectNSDW], wait=true);
-
-/* ofstream gnu("plotNSDW.gp");
-for (int i = 0; i < N; i++)
-    gnu << T[i] << " " << vectNSDW[i] << endl;
-
-//exec("echo 'plot \"plotNSDW.gp\" w l \n pause 5 \n set term postscript \n set output \"gnuplot.eps\" \n replot \n quit' | gnuplot");
-*/
-ofstream gnu("plot.gp");
-for (int i = 0; i < N; i++)
-    gnu << T[i] << " " << vectSDW[i] << endl;
-
-//exec("echo 'plot \"plotSDW.gp\" w l \n pause 5 \n set term postscript \n set output \"gnuplot.eps\" \n replot \n quit' | gnuplot");
-
-
-
-//plot([T,vectSDW], ps="SDWplot.eps");
-//ofstream file("result.txt");
-//file << "X_nsdw = " << Xnsdw << "\n";
-//file << "X_sdw = " << Xsdw << "\n";
