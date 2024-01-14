@@ -4,7 +4,7 @@ load "iovtk" //Tool per plottare la pressione
 
 //Data
 real L = 1;
-real mu = 10; //a 20C da internet
+real mu = 10; //per riuscire a far girare il codice sui nostri pc
 real rhoa = 1.29; // da internet kg*m^(-3)
 real g = 9.81; //gravitational acceleration
 real U = 0.3;// Characteristic velocity and inlet boundary velocity (for Dirichlet condition)
@@ -110,15 +110,18 @@ int[int] ord3=[1, 1, 1];
 savevtk("Pressure.vtk", Th, p, dataname="Pressure", order=ord);
 savevtk("Velocity.vtk", Th, [ux, uy, uz], dataname="Velocity", order=ord3);
 
-func to=25; //da sistemare
+func to=25; //da sistemare (tempeeratura dell'ambiente)
+
 Qh T, tau;
 real Cp=1012; //specific heat capacity of air 
 real lambda=0.024; //thermal conductivity of the air
-Qh Q = 40; //photon energy per area
-
+Qh Q= 40; //photon energy per area
+if (night==1){
+	Q=0;
+}
 problem energy (T, tau)
     = int3d(Th)(rhoa*Cp*[ux, uy, uz]'*grad(T)*tau + lambda*grad(T)'*grad(tau))
-    -int2d(Th,6)(-Q*tau)
+    -int2d(Th,6)(-Q/lambda*tau)
     -int3d(Th)(-lambdaE*tau*(x>=0.475 && x<=0.525 && y>=0.475 && y<=0.525 && z>=0 && z<=0.15))
     +on(1,3, T=to);
 
@@ -129,7 +132,7 @@ int[int] ordT=[1];
 savevtk("Temperature.vtk", Th, T, dataname="Temperature", order=ordT);
 
 func h2oinit=0.85; // dal paper
-func co2init=0.153; //dal paper
+func co2init=0.00153; //dal paper
 Qh h2o, co2, hv, c;
 real Rh2o=0, Rco2=0; //reaction term, always zero (in our model)
 

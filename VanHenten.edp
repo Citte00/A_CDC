@@ -4,7 +4,7 @@ real cbeta    = 0.8;             //respiratory and synthesis losses of non-struc
 
 //constants for r_gr equation
 real cgrMax   = 5e-6;            //saturation growth rate at 20°C (s^-1)
-real cgamma   = 0.8;             //should have a value between 0.5-1.0
+real cgamma   = 1;             //should have a value between 0.5-1.0
 real cQ10gr   = 1.6;             //Q10 factor for growth
 //real Tc       = 20;              //canopy temperature, valore prova (°C)
 //Tc=21.2 di giorno e Tc=20.8 di notte
@@ -46,8 +46,9 @@ int N=(tmax - t0)/dt;
 real Nmax = 100;
 real toll2 = 1e-3;
 
-real Xnsdw = 0.00675;
-real Xsdw = 0.00225;
+real Xnsdw = 0.3; // 0.00675; valore di Susanna
+real Xsdw = 0.1;  //0.00225;
+
 
 //gross canopy photosynthesis (g * m^-2 * s^-1)
 func real fphot(real xsdw){ return (1 - exp(-ck*clar*(1 - ctau) * xsdw)) * fphotmax; };

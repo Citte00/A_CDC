@@ -8,15 +8,17 @@ real gammaCO2;
 include "VanHenten.edp"
 
 for (int n=0; n<10; n++){
+real night=0; //dobbiamo capire come gestire notte e giorno
 include "Naranjani_newton.edp"
 // dal Naranjani prendiamo la canopy temperature T
-//Tc=21.2 di giorno e Tc=20.8 di notte
+//Tc=21.2 di giorno e Tc=20.8 di notte (dovrebbero essere conseguenza dell'accensione/spegnimento dei led)
 //sempre dal naranjani prendiamo h20 e co2
 
 //real Tc=T;
 //real gammaCO2  = co2*1e6;            //concentration of CO2 in the greenhouse air (ppm)
 //ci interessano i valori sulle foglie, ma intanto prendiamo la media sul volume (chiedere ad Alessandro)
 Tc = int3d(Th)(T)/int3d(Th)(1.0); 
+cout << "Tc = " << Tc << endl;
 gammaCO2 = int3d(Th)(co2*1e6)/int3d(Th)(1.0); 
 
 int[int] Time(N);
@@ -53,9 +55,13 @@ cout << "X_sdw = " << Xsdw << endl;
 
 real fph=fphot(Xsdw);
 cout << "fphot = " << fph << endl;
-
-Sco2=fph/1000;
+// fph è g/m^(2)
+Sco2=fph/1000; //da g a kg 
 Sh2o=fph/1000;
+//dobbiamo arrivare ad avere kg/m^3
+//prendiamo come lunghezza caratteristica l'altezza della pianta (cfr. Naranjani)
+Sco2=Sco2/0.15;
+Sh2o=Sh2o/0.15;
 
 //plot([Time,vectNSDW], wait=true);
 
