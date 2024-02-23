@@ -11,10 +11,6 @@ Rnet = (1 - rhor) * Ilight * CAC;
 cout << "R_net = " << Rnet << endl;
 
 // H equation
-//real rhoa = 1.225;                                 // density of air (std value)
-//real Cp = 1030;                                    // specific heat (std value)
-//real Tc = 21;                                      // temperature at the transpiring surface (Tc - Ta = 1)
-real Ta = Tc-1;                                      // temperature in the surrounding air
 real PPFD = 600;                                   // photosynthetic photon flux densities
 real l = 0.11;                                     // mean leaf diameter
 real uinf = 50;                                    // uninhibited air speed (trovato dove?)
@@ -23,7 +19,8 @@ real LAI = (1-ctau)*clar*Xsdw/1;                   // leaf area index, in Graama
 //diviso il numero di piante per unità di superficie
 real ra = 305 * (l / uinf)^(1/2) / LAI;            // aerodynamic resistance to heat
 real rs = 60 * (1500 + PPFD) / (200 + PPFD);       // surface resistance
-
+real Cp=1012;                                      //specific heat capacity of air 
+real lambda=0.024;                                  //thermal conductivity of the air
 
 H = LAI * rhoa * Cp / ra;
 cout << "H = " << H << endl;
@@ -37,12 +34,13 @@ real lambdaH = 0.;               // latent heat of the evaporation of water
 
 // this two values are obtained by the species mass fraction transport equation of Naranjani
 // Penman and Monteith give us the following relation between the two
-real gammaH2Oair = int3d(Th)(rhoa * h2o * 1e-3)/int3d(Th)(1);
+
 real gammaH2Osur = gammaH2Oair + rhoa * Cp * eps * (Tc - Ta);
 
 
 // our goal is to find lambda hence we can compute it by using R_net - H = lambda_e
 lambdaH = (ra + rs) * (Rnet - H) / (LAI * (gammaH2Osur - gammaH2Oair));
-cout << "lambda = " << lambdaH << endl;
+cout << "lambdaH = " << lambdaH << endl;
 
 lambdaE = LAI * lambdaH * (gammaH2Osur - gammaH2Oair) / (ra + rs);
+cout << "lambdaE = " << lambdaE << endl;

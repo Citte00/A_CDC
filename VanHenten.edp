@@ -1,35 +1,3 @@
-//constants for the dfferential equations
-real calpha   = 0.68;            //ratio of molecolar weight of CH20 and CO2
-real cbeta    = 0.8;             //respiratory and synthesis losses of non-structural material due to growht
-
-//constants for r_gr equation
-real cgrMax   = 5e-6;            //saturation growth rate at 20°C (s^-1)
-real cgamma   = 1;             //should have a value between 0.5-1.0
-real cQ10gr   = 1.6;             //Q10 factor for growth
-//real Tc       = 20;              //canopy temperature, valore prova (°C)
-//Tc=21.2 di giorno e Tc=20.8 di notte
-
-//constants for f_resp equation
-real ctau     = 0.15;            //ratio of the root dry weigth and the total dry weigth
-real crespSHT = 3.47e-7;         //shoot maintenance respiration coefficient at 25°C (s^-1)
-real crespRT  = 1.16e-7;         //root maintenance respiration coefficient at 25°C (s^-1)
-real cQ10resp = 2;               //Q10 factor of the maintenance respiration
-
-//constants for f_phot equation
-real ck        = 0.9;            //extinction coefficient
-real clar      = 75e-3;          //structural leaf area (m^2 * g)
-real Upar      = 45;             //incident photosyntetically active radiation, dato fornito da Agricola Moderna (W * m^-2)
-//real gammaCO2  = 800;            //concentration of CO2 in the greenhouse air (ppm), valore prova
-real comega    = 1.83e-3;        //estimated CO2 density at 15◦C temperature and ambient pressure (g * m^-3)
-real cGamma    = 40;             //CO2 compensation point at 20°C (ppm)
-real cQ10gamma = 2;              //Q10 value which accounts for the effect of temperature on Γ
-real cepsilon  = 17e-6;          //value of epsilon at very high CO2 concentration (g * J^-1)
-real gbnd      = 7e-3;           //boundary layer conductance (m * s^-1)
-real gstm      = 5e-3;           //stomatal conductance (m * s^-1)
-real ccar1     = -1.32e-5;       // (m * s^-1 * °C^-2)
-real ccar2     = 5.94e-4;        // (m * s^-1 * °C^-1)
-real ccar3     = -2.64e-3;       // (m * s^-1)
-
 real gcar      = ccar1 * Tc^2 + ccar2 * Tc + ccar3;                     //carboxylation conductance (m * s^-1)
 real gCO2      = (1/gbnd + 1/gstm + 1/gcar)^-1;                         //canopy conductance to CO2 diffusion (m * s^-1)
 real Gamma     = cGamma * cQ10gamma^((Tc - 20)/10);                     //CO2 compensation point (ppm)
@@ -37,17 +5,6 @@ real epsilon   = cepsilon * (gammaCO2 - Gamma) / (gammaCO2 + 2*Gamma);  //light 
 real fphotmaxn = epsilon * Upar * gCO2 * comega * (gammaCO2 - Gamma);   //numerator of f_phot_max
 real fphotmaxd = epsilon * Upar + gCO2 * comega * (gammaCO2 - Gamma);   //denominator of f_phot_max
 real fphotmax  = fphotmaxn / fphotmaxd;                                 //gross carbon dioxide assimilation rate of the canopy (g * m^-2 * s^-1)
-
-int t0 = 0;
-int tmax = 86400*20; //secondi in un giorno*20 giorni
-int dt = 24*60*60;
-int N=(tmax - t0)/dt;
-
-real Nmax = 100;
-real toll2 = 1e-3;
-
-real Xnsdw = 0.3; // 0.00675; valore di Susanna
-real Xsdw = 0.1;  //0.00225;
 
 
 //gross canopy photosynthesis (g * m^-2 * s^-1)
@@ -74,3 +31,35 @@ func real phi1(real Xnsdwnew, real xsdw){
 func real phi2(real Xsdwnew, real xnsdw){
     return Xsdw + dt/2 * (f2(xnsdw, Xsdw)  + f2(xnsdw, Xsdwnew));
 };
+
+int[int] Time(N);
+real[int] vectNSDW(N);
+real[int] vectSDW(N);
+
+for(int i = 0.; i < N; ++i){
+    int j = 0;
+    real err1 = toll2 + 1;
+    real err2 = toll2 + 1;
+    real w0 = phi1(Xnsdw, Xsdw);
+    real v0 = phi2(Xsdw, Xnsdw);
+    real w1 = 0.;
+    real v1 = 0.;
+    while(((err1 > toll2) || (err2 > toll2)) && (j < Nmax)){
+        w1 = phi1(w0, v0);
+        v1 = phi2(v0, w0);
+        err1 = abs(w1 - w0);
+        err2 = abs(v1 - v0);
+        w0 = w1;
+        v0 = v1;
+        j++;
+    }
+
+    Xnsdw = w1;
+    Xsdw = v1;
+    vectNSDW[i]=Xnsdw;
+    vectSDW[i]=Xsdw;
+    Time[i]=t0+i*dt;
+}
+
+cout << "X_nsdw = " << Xnsdw << endl;
+cout << "X_sdw = " << Xsdw << endl;

@@ -2,56 +2,24 @@ real Sh2o=0, Sco2=0; //valore iniziale, poi da modificare con la retroazione
 
 real lambdaE = 0.;     // latent heat exchange
 
-real Tc;
-real gammaCO2;
 
-include "VanHenten.edp"
+include "VanHenten_data.edp"
 
-for (int n=0; n<10; n++){
-real night=0; //dobbiamo capire come gestire notte e giorno
-include "Naranjani_newton.edp"
 // dal Naranjani prendiamo la canopy temperature T
 //Tc=21.2 di giorno e Tc=20.8 di notte (dovrebbero essere conseguenza dell'accensione/spegnimento dei led)
 //sempre dal naranjani prendiamo h20 e co2
+include "Naranjani_newton.edp"
 
-//real Tc=T;
-//real gammaCO2  = co2*1e6;            //concentration of CO2 in the greenhouse air (ppm)
-//ci interessano i valori sulle foglie, ma intanto prendiamo la media sul volume (chiedere ad Alessandro)
-Tc = int3d(Th)(T)/int3d(Th)(1.0); 
-cout << "Tc = " << Tc << endl;
-gammaCO2 = int3d(Th)(co2*1e6)/int3d(Th)(1.0); 
+real Ta=21; //valore prova di inizializzazione 
+real Tc=Ta-1;
+real gammaCO2=800; //valore prova di inizializzazione (internet) in ppm
+real gammaH2Oair = 0.01667; //valore prova (internet) in g/m^3
 
-int[int] Time(N);
-real[int] vectNSDW(N);
-real[int] vectSDW(N);
 
-for(int i = 0.; i < N; ++i){
-    int j = 0;
-    real err1 = toll2 + 1;
-    real err2 = toll2 + 1;
-    real w0 = phi1(Xnsdw, Xsdw);
-    real v0 = phi2(Xsdw, Xnsdw);
-    real w1 = 0.;
-    real v1 = 0.;
-    while(((err1 > toll2) || (err2 > toll2)) && (j < Nmax)){
-        w1 = phi1(w0, v0);
-        v1 = phi2(v0, w0);
-        err1 = abs(w1 - w0);
-        err2 = abs(v1 - v0);
-        w0 = w1;
-        v0 = v1;
-        j++;
-    }
+for (int n=0; n<10; n++){
+real night=0; //dobbiamo capire come gestire notte e giorno
 
-    Xnsdw = w1;
-    Xsdw = v1;
-    vectNSDW[i]=Xnsdw;
-    vectSDW[i]=Xsdw;
-    Time[i]=t0+i*dt;
-}
-
-cout << "X_nsdw = " << Xnsdw << endl;
-cout << "X_sdw = " << Xsdw << endl;
+include "VanHenten.edp"
 
 real fph=fphot(Xsdw);
 cout << "fphot = " << fph << endl;
@@ -84,5 +52,17 @@ for (int i = 0; i < N; i++)
 //file << "X_sdw = " << Xsdw << "\n";
 
 include "Graamans.edp"
-lambdaE = Rnet - H;
+//lambdaE = Rnet - H;
+
+include "Naranjani_energy.edp"
+
+//real Tc=T;
+//real gammaCO2  = co2*1e6;            //concentration of CO2 in the greenhouse air (ppm)
+//ci interessano i valori sulle foglie, ma intanto prendiamo la media sul volume (chiedere ad Alessandro)
+Ta = int3d(Th)(T)/int3d(Th)(1.0); 
+Tc= Ta-1; //approssimazione data da Alessandro
+cout << "Tc = " << Tc << endl;
+gammaCO2 = int3d(Th)(co2*1e6)/int3d(Th)(1.0); 
+cout << "gammaCO2 = " << gammaCO2 << endl;
+gammaH2Oair = int3d(Th)(h2o * rhoa * 1e-3)/int3d(Th)(1); //integral mean and change of unit (now we want it g/m^3)
 }

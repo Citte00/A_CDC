@@ -1,0 +1,45 @@
+func to=25; //da sistemare (tempeeratura dell'ambiente)
+
+Qh T, tau;
+Qh Q= 40; //photon energy per area
+if (night==1){
+	Q=0;
+}
+problem energy (T, tau)
+    = int3d(Th)(rhoa*Cp*[ux, uy, uz]'*grad(T)*tau + lambda*grad(T)'*grad(tau))
+    -int2d(Th,6)(-Q/lambda*tau)
+    -int3d(Th)(-lambdaE*tau*(x>=0.475 && x<=0.525 && y>=0.475 && y<=0.525 && z>=0 && z<=0.15))
+    +on(1,3, T=to);
+
+energy;
+
+// Plot del risultato:
+int[int] ordT=[1];
+savevtk("Temperature.vtk", Th, T, dataname="Temperature", order=ordT);
+
+func h2oinit=0.85; // dal paper
+func co2init=0.00153; //dal paper
+Qh h2o, co2, hv, c;
+real Rh2o=0, Rco2=0; //reaction term, always zero (in our model)
+
+problem massH2O (h2o, hv)
+    = int3d(Th)(rhoa*[ux, uy, uz]'*grad(h2o)*hv )
+    - int3d(Th)(Rh2o*hv+Sh2o*hv*(x>=0.475 && x<=0.525 && y>=0.475 && y<=0.525 && z>=0 && z<=0.15))
+	 +on(1, h2o=h2oinit);
+    //BC ?
+
+massH2O;
+//cout<<"h2o mass fraction: "<<h2o<<endl;
+int[int] ordh=[1];
+savevtk("massh2o.vtk", Th, h2o, dataname="Mass_h2o", order=ordh);
+
+problem massCO2 (co2, c)
+    = int3d(Th)(rhoa*[ux, uy, uz]'*grad(co2)*c )
+    -int3d(Th)(Rco2*c+Sco2*c*(x>=0.475 && x<=0.525 && y>=0.475 && y<=0.525 && z>=0 && z<=0.15))
+	+on(1, co2=co2init);
+    //BC ?
+
+massCO2;
+//cout<<"co2 mass fraction: "<<co2<<endl;
+int[int] ordc=[1];
+savevtk("massco2.vtk", Th, co2, dataname="Mass_co2", order=ordc);
