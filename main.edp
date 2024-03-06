@@ -28,8 +28,9 @@ Sco2=fph/1000; //da g a kg
 Sh2o=fph/1000;
 //dobbiamo arrivare ad avere kg/m^3
 //prendiamo come lunghezza caratteristica l'altezza della pianta (cfr. Naranjani)
-Sco2=Sco2/0.15;
-Sh2o=Sh2o/0.15;
+//Sco2=Sco2/0.15;
+//Sh2o=Sh2o/0.15;
+//conversione 1 a 1, dividiamo per 1m
 
 //plot([Time,vectNSDW], wait=true);
 
@@ -64,5 +65,5 @@ Tc= Ta-1; //approssimazione data da Alessandro
 cout << "Tc = " << Tc << endl;
 gammaCO2 = int3d(Th)(co2*1e6)/int3d(Th)(1.0); 
 cout << "gammaCO2 = " << gammaCO2 << endl;
-gammaH2Oair = int3d(Th)(h2o * rhoa * 1e-3)/int3d(Th)(1); //integral mean and change of unit (now we want it g/m^3)
+gammaH2Oair = int3d(Th)(h2o * rhoa * 1e+3)/int3d(Th)(1); //integral mean and change of unit (now we want it g/m^3)
 }

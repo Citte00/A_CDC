@@ -37,8 +37,8 @@ int N=(tmax - t0)/dt;
 real Nmax = 100;
 real toll2 = 1e-3;
 
-real Xnsdw = 0.3; // 0.00675; valore di Susanna
-real Xsdw = 0.1;  //0.00225;
+real Xnsdw = 6.75e-5; //valore di Susanna
+real Xsdw = 2.25e-5;
 
 
 

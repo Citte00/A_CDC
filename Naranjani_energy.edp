@@ -1,7 +1,7 @@
 func to=25; //da sistemare (tempeeratura dell'ambiente)
 
 Qh T, tau;
-Qh Q= 40; //photon energy per area
+Qh Q= 45; //photon energy per area (coerente con VanHenten)
 if (night==1){
 	Q=0;
 }
