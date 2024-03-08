@@ -15,8 +15,6 @@ real PPFD = 600;                                   // photosynthetic photon flux
 real l = 0.11;                                     // mean leaf diameter
 real uinf = 50;                                    // uninhibited air speed (trovato dove?)
 
-real LAI = (1-ctau)*clar*Xsdw;                   // leaf area index, in Graamans is 3, we use the value obtained in VanHenten
-//diviso il numero di piante per unità di superficie
 real ra = 305 * (l / uinf)^(1/2) / LAI;            // aerodynamic resistance to heat
 real rs = 60 * (1500 + PPFD) / (200 + PPFD);       // surface resistance
 real Cp=1012;                                      //specific heat capacity of air 

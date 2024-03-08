@@ -40,5 +40,9 @@ real toll2 = 1e-3;
 real Xnsdw = 6.75e-5; //valore di Susanna
 real Xsdw = 2.25e-5;
 
+// Vettori per storage dati dry weight nel tempo:
+int[int] Time(N);
+real[int] vectNSDW(N);
+real[int] vectSDW(N);
 
 

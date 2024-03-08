@@ -32,34 +32,28 @@ func real phi2(real Xsdwnew, real xnsdw){
     return Xsdw + dt/2 * (f2(xnsdw, Xsdw)  + f2(xnsdw, Xsdwnew));
 };
 
-int[int] Time(N);
-real[int] vectNSDW(N);
-real[int] vectSDW(N);
-
-for(int i = 0.; i < N; ++i){
-    int j = 0;
-    real err1 = toll2 + 1;
-    real err2 = toll2 + 1;
-    real w0 = phi1(Xnsdw, Xsdw);
-    real v0 = phi2(Xsdw, Xnsdw);
-    real w1 = 0.;
-    real v1 = 0.;
-    while(((err1 > toll2) || (err2 > toll2)) && (j < Nmax)){
-        w1 = phi1(w0, v0);
-        v1 = phi2(v0, w0);
-        err1 = abs(w1 - w0);
-        err2 = abs(v1 - v0);
-        w0 = w1;
-        v0 = v1;
-        j++;
-    }
-
-    Xnsdw = w1;
-    Xsdw = v1;
-    vectNSDW[i]=Xnsdw;
-    vectSDW[i]=Xsdw;
-    Time[i]=t0+i*dt;
+int j = 0;
+real err1 = toll2 + 1;
+real err2 = toll2 + 1;
+real w0 = phi1(Xnsdw, Xsdw);
+real v0 = phi2(Xsdw, Xnsdw);
+real w1 = 0.;
+real v1 = 0.;
+while(((err1 > toll2) || (err2 > toll2)) && (j < Nmax)){
+    w1 = phi1(w0, v0);
+    v1 = phi2(v0, w0);
+    err1 = abs(w1 - w0);
+    err2 = abs(v1 - v0);
+    w0 = w1;
+    v0 = v1;
+    j++;
 }
+
+Xnsdw = w1;
+Xsdw = v1;
+vectNSDW[t]=Xnsdw;
+vectSDW[t]=Xsdw;
+Time[t]=t0+t*dt;
 
 cout << "X_nsdw = " << Xnsdw << endl;
 cout << "X_sdw = " << Xsdw << endl;

@@ -1,6 +1,7 @@
 real Sh2o=0, Sco2=0; //valore iniziale, poi da modificare con la retroazione
 
 real lambdaE = 0.;     // latent heat exchange
+real LAI = 0.;   // Leaf Area Index
 
 
 include "VanHenten_data.edp"
@@ -16,27 +17,54 @@ real gammaCO2=800; //valore prova di inizializzazione (internet) in ppm
 real gammaH2Oair = 0.01667; //valore prova (internet) in g/m^3
 
 
-for (int n=0; n<10; n++){
-real night=0; //dobbiamo capire come gestire notte e giorno
+// N si trova in Van Henten data, cambia x aumentare iterazioni per introdurre giorno/notte !!!!!ù
 
-include "VanHenten.edp"
+for (int t = 0; t < N; t++){
 
-real fph=fphot(Xsdw);
-cout << "fphot = " << fph << endl;
-// fph è g/m^(2)
-Sco2=fph/1000; //da g a kg 
-Sh2o=fph/1000;
-//dobbiamo arrivare ad avere kg/m^3
-//prendiamo come lunghezza caratteristica l'altezza della pianta (cfr. Naranjani)
-//Sco2=Sco2/0.15;
-//Sh2o=Sh2o/0.15;
-//conversione 1 a 1, dividiamo per 1m
+    cout << "giorno: " << t << endl;
+
+    real night=0; //dobbiamo capire come gestire notte e giorno
+
+    include "VanHenten.edp"
+
+    // Convertiamo u.m. dei valori da inserire su Naranjani
+    real fph=fphot(Xsdw);
+    cout << "fphot = " << fph << endl;
+    // fph è g/m^(2)
+    Sco2=fph/1000; //da g a kg
+    Sh2o=fph/1000;
+    //dobbiamo arrivare ad avere kg/m^3
+    //prendiamo come lunghezza caratteristica l'altezza della pianta (cfr. Naranjani)
+    //conversione 1 a 1, dividiamo per 1m
+
+    //ofstream file("result.txt");
+    //file << "X_nsdw = " << Xnsdw << "\n";
+    //file << "X_sdw = " << Xsdw << "\n";
+
+    //Compute LAi from Xsdw using formula provided by Van Henten:
+    LAI = (1-ctau)*clar*Xsdw;
+
+    include "Graamans.edp"
+
+    //Value of lambdaE is computed within Graamans --> lambdaE = Rnet - H;
+    include "Naranjani_energy.edp"
+
+    //Come nuovo valore di Ta prendiamo la media integrale di T calcolata da Naranjani:
+    Ta = int3d(Th)(T)/int3d(Th)(1.0);
+    Tc= Ta-1; //approssimazione data da Alessandro
+    cout << "Tc = " << Tc << endl;
+
+    gammaCO2 = int3d(Th)(co2*1e6)/int3d(Th)(1.0);
+    cout << "gammaCO2 = " << gammaCO2 << endl;
+    gammaH2Oair = int3d(Th)(h2o * rhoa * 1e+3)/int3d(Th)(1); //integral mean and change of unit (now we want it g/m^3)
+
+    cout << "\n" << endl;
+}
 
 //plot([Time,vectNSDW], wait=true);
-
 /* ofstream gnu("plotNSDW.gp");
 for (int i = 0; i < N; i++)
-   gnu << Time[i] << " " << vectNSDW[i] << endl;
+        gnu << Time[i] << " " << vectNSDW[i] << endl;
 
 //exec("echo 'plot \"plotNSDW.gp\" w l \n pause 5 \n set term postscript \n set output \"gnuplot.eps\" \n replot \n quit' | gnuplot");
 
@@ -48,22 +76,3 @@ for (int i = 0; i < N; i++)
 */
 
 //plot([Time,vectSDW], ps="SDWplot.eps");
-//ofstream file("result.txt");
-//file << "X_nsdw = " << Xnsdw << "\n";
-//file << "X_sdw = " << Xsdw << "\n";
-
-include "Graamans.edp"
-//lambdaE = Rnet - H;
-
-include "Naranjani_energy.edp"
-
-//real Tc=T;
-//real gammaCO2  = co2*1e6;            //concentration of CO2 in the greenhouse air (ppm)
-//ci interessano i valori sulle foglie, ma intanto prendiamo la media sul volume (chiedere ad Alessandro)
-Ta = int3d(Th)(T)/int3d(Th)(1.0); 
-Tc= Ta-1; //approssimazione data da Alessandro
-cout << "Tc = " << Tc << endl;
-gammaCO2 = int3d(Th)(co2*1e6)/int3d(Th)(1.0); 
-cout << "gammaCO2 = " << gammaCO2 << endl;
-gammaH2Oair = int3d(Th)(h2o * rhoa * 1e+3)/int3d(Th)(1); //integral mean and change of unit (now we want it g/m^3)
-}
