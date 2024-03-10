@@ -3,7 +3,6 @@ real Sh2o=0, Sco2=0; //valore iniziale, poi da modificare con la retroazione
 real lambdaE = 0.;     // latent heat exchange
 real LAI = 0.;   // Leaf Area Index
 
-
 include "VanHenten_data.edp"
 
 // dal Naranjani prendiamo la canopy temperature T
@@ -15,7 +14,6 @@ real Ta=21; //valore prova di inizializzazione
 real Tc=Ta-1;
 real gammaCO2=800; //valore prova di inizializzazione (internet) in ppm
 real gammaH2Oair = 0.01667; //valore prova (internet) in g/m^3
-
 
 // N si trova in Van Henten data, cambia x aumentare iterazioni per introdurre giorno/notte !!!!!ù
 

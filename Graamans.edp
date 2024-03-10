@@ -11,7 +11,7 @@ Rnet = (1 - rhor) * Ilight * CAC;
 cout << "R_net = " << Rnet << endl;
 
 // H equation
-real PPFD = 600;                                   // photosynthetic photon flux densities DEVE ESSERE COERENTE CON VANHENTEN
+real PPFD = 207;                                   // photosynthetic photon flux densities DEVE ESSERE COERENTE CON VANHENTEN
 real l = 0.11;                                     // mean leaf diameter
 real uinf = 50;                                    // uninhibited air speed (trovato dove?)
 

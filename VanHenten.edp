@@ -1,21 +1,27 @@
 real gcar      = ccar1 * Tc^2 + ccar2 * Tc + ccar3;                     //carboxylation conductance (m * s^-1)
-real gCO2      = (1/gbnd + 1/gstm + 1/gcar)^-1;                         //canopy conductance to CO2 diffusion (m * s^-1)
+real gCO2      = (1/gbnd + 1/gstm + 1/gcar)^(-1);                         //canopy conductance to CO2 diffusion (m * s^-1)
 real Gamma     = cGamma * cQ10gamma^((Tc - 20)/10);                     //CO2 compensation point (ppm)
 real epsilon   = cepsilon * (gammaCO2 - Gamma) / (gammaCO2 + 2*Gamma);  //light use efficiency (g * J^-1)
 real fphotmaxn = epsilon * Upar * gCO2 * comega * (gammaCO2 - Gamma);   //numerator of f_phot_max
 real fphotmaxd = epsilon * Upar + gCO2 * comega * (gammaCO2 - Gamma);   //denominator of f_phot_max
 real fphotmax  = fphotmaxn / fphotmaxd;                                 //gross carbon dioxide assimilation rate of the canopy (g * m^-2 * s^-1)
 
-
 //gross canopy photosynthesis (g * m^-2 * s^-1)
-func real fphot(real xsdw){ return (1 - exp(-ck*clar*(1 - ctau) * xsdw)) * fphotmax; };
+func real fphot(real xsdw){
+    return (1 - exp(-ck*clar*(1 - ctau) * xsdw)) * fphotmax;
+};
 
 //maintenance respiration (g * m^-2 * s^-1)
-func real fresp(real xsdw){ return (crespSHT * (1 - ctau) * xsdw + crespRT * ctau * xsdw) * cQ10resp^((Tc - 25)/10); };
+func real fresp(real xsdw){
+    return (crespSHT * (1 - ctau) * xsdw + crespRT * ctau * xsdw) * cQ10resp^((Tc - 25)/10);
+};
 
 //specific growth rate (s^-1)
-func real rgr(real xnsdw, real xsdw){ return cgrMax * xnsdw / (xnsdw + cgamma * xsdw) * cQ10gr^((Tc - 20)/10); };
+func real rgr(real xnsdw, real xsdw){
+    return cgrMax * xnsdw / (xnsdw + cgamma * xsdw) * cQ10gr^((Tc - 20)/10);
+};
 
+//rhs del sistema di ODE
 func real f1(real xnsdw, real xsdw){
     return calpha * fphot(xsdw) - rgr(xnsdw, xsdw) * xsdw - fresp(xsdw) - (1 -cbeta)/cbeta * rgr(xnsdw, xsdw) * xsdw;
 };
@@ -24,24 +30,26 @@ func real f2(real xnsdw, real xsdw){
     return rgr(xnsdw, xsdw) * xsdw;
 };
 
-func real phi1(real Xnsdwnew, real xsdw){
-    return Xnsdw + dt/2 * (f1(Xnsdw, xsdw)  + f1(Xnsdwnew, xsdw));
+// per risolvere il sistema di equazioni differenziali utilizziamo Crank-Nicolson
+func real phi1(real xnsdw, real xsdw){
+    return Xnsdw + dt/2 * (f1(Xnsdw, Xsdw)  + f1(xnsdw, xsdw));
 };
 
-func real phi2(real Xsdwnew, real xnsdw){
-    return Xsdw + dt/2 * (f2(xnsdw, Xsdw)  + f2(xnsdw, Xsdwnew));
+func real phi2(real xnsdw, real xsdw){
+    return Xsdw + dt/2 * (f2(Xnsdw, Xsdw)  + f2(xnsdw, xsdw));
 };
 
+//algoritmo per risolvere il sistema di equazioni differenziali, siccome è un sistema non lineare usiamo un metodo di punto fisso
 int j = 0;
 real err1 = toll2 + 1;
 real err2 = toll2 + 1;
 real w0 = phi1(Xnsdw, Xsdw);
-real v0 = phi2(Xsdw, Xnsdw);
+real v0 = phi2(Xnsdw, Xsdw);
 real w1 = 0.;
 real v1 = 0.;
 while(((err1 > toll2) || (err2 > toll2)) && (j < Nmax)){
     w1 = phi1(w0, v0);
-    v1 = phi2(v0, w0);
+    v1 = phi2(w0, v0);
     err1 = abs(w1 - w0);
     err2 = abs(v1 - v0);
     w0 = w1;
