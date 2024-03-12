@@ -3,54 +3,47 @@ real H = 0.;            // sensible heat exchange
 
 
 /////////////////////////////////
-// R_net equation:
-////////////////////////////////
+//       Rnet equation:        //
+/////////////////////////////////
 
 real rhor = 0.05;      // reflection coefficient
 real CAC = 0.9;        // cultivation area cover
 // CAC is % of projected leaf area to cultivation area
-real Ilight = 45;      // light intensity (in W/m^2) -> given
+real Ilight = 45.;      // light intensity (in W/m^2) -> given
 
 Rnet = (1 - rhor) * Ilight * CAC;
 cout << "R_net = " << Rnet << endl;
 
 
-//////////////////////////////////
-// H equation:
-//////////////////////////////////
+/////////////////////////////////
+//         H equation:         //
+/////////////////////////////////
 
-real PPFD = 207;                                   // photosynthetic photon flux densities
+real PPFD = 207.;                                   // photosynthetic photon flux densities
 real l = 0.11;                                     // mean leaf diameter
 real uinf = U;                                    // uninhibited air speed
 // U is defined at row 10 of Naranjani_newton.edp: it both inlet and characteristic velocity in NS.
 
 real ra = 305 * (l / uinf)^(1/2) / LAI;            // aerodynamic resistance to heat
 real rs = 60 * (1500 + PPFD) / (200 + PPFD);       // surface resistance
-real Cp=1012;                                      //specific heat capacity of air 
-real lambda=0.024;                                  //thermal conductivity of the air
+real Cp = 1012.;                                      //specific heat capacity of air
+real lambda = 0.024;                                  //thermal conductivity of the air
 
-H = - LAI * rhoa * Cp / ra;     // H = heat from crop to air, actually it goes on the other way so H<0!!
+H = - LAI * rhoa * Cp / ra;     // H = heat from crop to air, actually it goes on the other way so H<0!
 //The "-" comes from "Tc-Ta" at the numerator, that is omitted since =-1 by assumption (row 14 in main.edp)
 cout << "H = " << H << endl;
 
 
-//////////////////////////////////////////
-// lambda_E equation:
-//////////////////////////////////////////
+/////////////////////////////////
+//      lambdaE equation:      //
+/////////////////////////////////
 
 //From the energy balance it is easily computed:
 real lambdaE = Rnet - H;
 cout << "lambdaE = " << lambdaE << endl;
 
 // MANCA VALORE DI gammaH20sur, BISOGNA CALCOLARLO IN MAIN O NARANJANI_ENERGY.
-// NON POSSIAMO USARE SATURATION ASSUMPTION COME ABBIAMO FATTO FINO AD ORA.
-// SOSTITUENDO SATURATION ASSUMPTION NELLE EQUAZIONI lambdaH (CHE SAREBBE LA NOSTRA
-// INCOGNITA) SI SEMPLIFICA E SCOMPARE! IL CODICE DI PRIMA AVEVA QUESTA EQUAZIONE
-// SCRITTA SBAGLIATA, QUINDI NON CI SIAMO MAI RESI CONTO DI QUESTA COSA, MA IL CALCOLO CHE STAVAMO
-// FACENDO NON AVEVA SENSO.
 
 // The aim is to compute lambdaH: latent heat of the evaporation of water:
-// we obtain it by reversing the equation LambdaE = ...
-// (gammaH2Osur and gammaH2Oair are computed within Naranjani_energy, while LAI within main.edp)
 real lambdaH = (ra + rs) * lambdaE / (LAI * (gammaH2Osur - gammaH2Oair));
 cout << "lambdaH = " << lambdaH << endl;
