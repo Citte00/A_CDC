@@ -14,12 +14,13 @@ real Ta=21; //valore prova di inizializzazione
 real Tc=Ta-1;
 real gammaCO2=800; //valore prova di inizializzazione (internet) in ppm
 real gammaH2Oair = 0.01667; //valore prova (internet) in g/m^3
+real gammaH20sur = gammaH20air //@ tempo 0 non c'è differenza tra aria e superficie pianta
 
-// N si trova in Van Henten data, cambia x aumentare iterazioni per introdurre giorno/notte !!!!!ù
+// N si trova in Van Henten data, cambia x aumentare iterazioni per introdurre giorno/notte !!!!!
 
 for (int t = 0; t < N; t++){
 
-    cout << "giorno: " << t << endl;
+    cout << "giorno: " << t+1 << endl;
 
     real night=0; //dobbiamo capire come gestire notte e giorno
 
@@ -39,7 +40,7 @@ for (int t = 0; t < N; t++){
     //file << "X_nsdw = " << Xnsdw << "\n";
     //file << "X_sdw = " << Xsdw << "\n";
 
-    //Compute LAi from Xsdw using formula provided by Van Henten:
+    //Compute LAI from Xsdw using formula provided by Van Henten:
     LAI = (1-ctau)*clar*Xsdw;
 
     include "Graamans.edp"
@@ -55,6 +56,7 @@ for (int t = 0; t < N; t++){
     gammaCO2 = int3d(Th)(co2*1e6)/int3d(Th)(1.0);
     cout << "gammaCO2 = " << gammaCO2 << endl;
     gammaH2Oair = int3d(Th)(h2o * rhoa * 1e+3)/int3d(Th)(1); //integral mean and change of unit (now we want it g/m^3)
+    // gammaH20sur = ... SERVE IN GRAAMANS!!
 
     cout << "\n" << endl;
 }
