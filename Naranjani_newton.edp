@@ -2,17 +2,14 @@ load "msh3" // Tool per generare la mesh 3d
 load "medit" // Tool per plottare la mesh
 load "iovtk" //Tool per plottare la pressione
 
-//Data
-real L = 1;
-real mu = 10; //per riuscire a far girare il codice sui nostri pc
-real g = 9.81; //gravitational acceleration
-real rhoa = 1.29;                     // da internet kg*m^(-3)
-real U = 0.3;// Characteristic velocity and inlet boundary velocity (for Dirichlet condition)
 real Re=rhoa*U*L/mu; //Reynolds number
 cout<<"Re: "<<Re<<endl;
 
 //Mesh Generation
 mesh3 Th = cube(10, 10, 10, [L*x,L*y,L*z]);
+
+//Crop position indicator function:
+func chi = (x>=0.475 && x<=0.525 && y>=0.475 && y<=0.525 && z>=0 && z<=0.15);
 
 // medit("Mesh", Th);
 savemesh(Th, "Mesh_cube.mesh");
@@ -71,7 +68,7 @@ problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 
 // Macro contenente ciclo di Newton per la risoluzione:
 real toll = 1e-03; // Tolleranza per la variazione dell'errore (della fluid velocity u)
-int kmax = 150; // Numero massimo di iterazioni per capire se Newton diverge
+int kmax = 300; // Numero massimo di iterazioni per capire se Newton diverge
 
 macro NavierStokes(){
 	Stokes;

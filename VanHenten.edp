@@ -1,10 +1,10 @@
-real gcar      = ccar1 * Tc^2 + ccar2 * Tc + ccar3;                     //carboxylation conductance (m * s^-1)
+real gcar      = ccar1 * Tc^2 + ccar2 * Tc + ccar3;                       //carboxylation conductance (m * s^-1)
 real gCO2      = (1/gbnd + 1/gstm + 1/gcar)^(-1);                         //canopy conductance to CO2 diffusion (m * s^-1)
-real Gamma     = cGamma * cQ10gamma^((Tc - 20)/10);                     //CO2 compensation point (ppm)
-real epsilon   = cepsilon * (gammaCO2 - Gamma) / (gammaCO2 + 2*Gamma);  //light use efficiency (g * J^-1)
-real fphotmaxn = epsilon * Upar * gCO2 * comega * (gammaCO2 - Gamma);   //numerator of f_phot_max
-real fphotmaxd = epsilon * Upar + gCO2 * comega * (gammaCO2 - Gamma);   //denominator of f_phot_max
-real fphotmax  = fphotmaxn / fphotmaxd;                                 //gross carbon dioxide assimilation rate of the canopy (g * m^-2 * s^-1)
+real Gamma     = cGamma * cQ10gamma^((Tc - 20)/10);                       //CO2 compensation point (ppm)
+real epsilon   = cepsilon * (gammaCO2 - Gamma) / (gammaCO2 + 2*Gamma);    //light use efficiency (g * J^-1)
+real fphotmaxn = epsilon * Ilight * gCO2 * comega * (gammaCO2 - Gamma);   //numerator of f_phot_max
+real fphotmaxd = epsilon * Ilight + gCO2 * comega * (gammaCO2 - Gamma);   //denominator of f_phot_max
+real fphotmax  = fphotmaxn / fphotmaxd;                                   //gross carbon dioxide assimilation rate of the canopy (g * m^-2 * s^-1)
 
 //gross canopy photosynthesis (g * m^-2 * s^-1)
 func real fphot(real xsdw){
@@ -21,7 +21,7 @@ func real rgr(real xnsdw, real xsdw){
     return cgrMax * xnsdw / (xnsdw + cgamma * xsdw) * cQ10gr^((Tc - 20)/10);
 };
 
-//rhs del sistema di ODE
+//rhs ODEs system
 func real f1(real xnsdw, real xsdw){
     return calpha * fphot(xsdw) - rgr(xnsdw, xsdw) * xsdw - fresp(xsdw) - (1 -cbeta)/cbeta * rgr(xnsdw, xsdw) * xsdw;
 };
@@ -30,7 +30,7 @@ func real f2(real xnsdw, real xsdw){
     return rgr(xnsdw, xsdw) * xsdw;
 };
 
-// per risolvere il sistema di equazioni differenziali utilizziamo Crank-Nicolson
+// We employed Crank-Nicolson to solve the ODEs system
 func real phi1(real xnsdw, real xsdw){
     return Xnsdw + dt/2 * (f1(Xnsdw, Xsdw)  + f1(xnsdw, xsdw));
 };
@@ -39,7 +39,7 @@ func real phi2(real xnsdw, real xsdw){
     return Xsdw + dt/2 * (f2(Xnsdw, Xsdw)  + f2(xnsdw, xsdw));
 };
 
-//algoritmo per risolvere il sistema di equazioni differenziali, siccome è un sistema non lineare usiamo un metodo di punto fisso
+// Solution of the ODEs system, we use a fixed point method to deal with non-linearity
 int j = 0;
 real err1 = toll2 + 1;
 real err2 = toll2 + 1;
