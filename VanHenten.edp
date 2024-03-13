@@ -32,19 +32,19 @@ func real f2(real xnsdw, real xsdw){
 
 // We employed Crank-Nicolson to solve the ODEs system
 func real phi1(real xnsdw, real xsdw){
-    return Xnsdw + dt/2 * (f1(Xnsdw, Xsdw)  + f1(xnsdw, xsdw));
+    return vectDW(0,t) + dt/2 * (f1(vectDW(0,t), vectDW(1,t))  + f1(xnsdw, xsdw));
 };
 
 func real phi2(real xnsdw, real xsdw){
-    return Xsdw + dt/2 * (f2(Xnsdw, Xsdw)  + f2(xnsdw, xsdw));
+    return vectDW(1,t) + dt/2 * (f2(vectDW(0,t), vectDW(1,t))  + f2(xnsdw, xsdw));
 };
 
 // Solution of the ODEs system, we use a fixed point method to deal with non-linearity
 int j = 0;
 real err1 = toll2 + 1;
 real err2 = toll2 + 1;
-real w0 = phi1(Xnsdw, Xsdw);
-real v0 = phi2(Xnsdw, Xsdw);
+real w0 = vectDW(0,t);
+real v0 = vectDW(1,t);
 real w1 = 0.;
 real v1 = 0.;
 while(((err1 > toll2) || (err2 > toll2)) && (j < Nmax)){
@@ -57,11 +57,8 @@ while(((err1 > toll2) || (err2 > toll2)) && (j < Nmax)){
     j++;
 }
 
-Xnsdw = w1;
-Xsdw = v1;
-vectNSDW[t]=Xnsdw;
-vectSDW[t]=Xsdw;
+vectDW(:,t+1) = [w1, v1];
 Time[t]=t0+t*dt;
 
-cout << "X_nsdw = " << Xnsdw << endl;
-cout << "X_sdw = " << Xsdw << endl;
+cout << "X_nsdw = " << vectDW(0,t+1) << endl;
+cout << "X_sdw = " << vectDW(1,t+1) << endl;
