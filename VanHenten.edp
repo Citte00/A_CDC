@@ -58,7 +58,7 @@ while(((err1 > toll2) || (err2 > toll2)) && (j < Nmax)){
 }
 
 vectDW(:,t+1) = [w1, v1];
-Time[t]=t0+t*dt;
+Time[t+1] = Time[t] + dt;
 
 cout << "X_nsdw = " << vectDW(0,t+1) << endl;
 cout << "X_sdw = " << vectDW(1,t+1) << endl;

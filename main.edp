@@ -51,18 +51,28 @@ for (int t = 0; t < N; t++){
     cout << "\n" << endl;
 }
 
-//plot([Time,vectNSDW], wait=true);
-/* ofstream gnu("plotNSDW.gp");
-for (int i = 0; i < N; i++)
-        gnu << Time[i] << " " << vectNSDW[i] << endl;
+//plot([[Time, Time]], wait=true, ps="NSDWplot.eps");
+//plot([Time, vectDW[1][]], ps="SDWplot.eps");
+
+//include "ffmatlib.idp"
+
+//ffSaveData(vectDW, "export_DW.txt");
+//ffSaveData(Time,"export_time.txt");
+
+
+ofstream gnu("plotNSDW.gp");
+for (int i = 0; i < N+1; i++)
+        gnu << Time[i]/(24*60*60) << " " << vectDW(0,i) << endl;
+
+ofstream gnu("plotSDW.gp");
+for (int i = 0; i < N+1; i++)
+        gnu << Time[i]/(24*60*60) << " " << vectDW(1,i) << endl;
 
 //exec("echo 'plot \"plotNSDW.gp\" w l \n pause 5 \n set term postscript \n set output \"gnuplot.eps\" \n replot \n quit' | gnuplot");
 
-ofstream gnu("plot.gp");
+/*ofstream gnu("plot.gp");
 for (int i = 0; i < N; i++)
-    gnu << Time[i] << " " << vectSDW[i] << endl;
+    gnu << Time[i] << " " << vectDW(1,i) << endl;
 
-//exec("echo 'plot \"plotSDW.gp\" w l \n pause 5 \n set term postscript \n set output \"gnuplot.eps\" \n replot \n quit' | gnuplot");
+exec("echo 'plot \"plotSDW.gp\" w l \n pause 5 \n set term postscript \n set output \"gnuplot.eps\" \n replot \n quit' | gnuplot");
 */
-
-//plot([Time,vectSDW], ps="SDWplot.eps");
