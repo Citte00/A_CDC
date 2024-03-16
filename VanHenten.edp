@@ -1,6 +1,6 @@
-real gcar      = ccar1 * Tc^2 + ccar2 * Tc + ccar3;                       //carboxylation conductance (m * s^-1)
+real gcar      = ccar1 * vectTc(t+1)^2 + ccar2 * vectTc(t+1) + ccar3;     //carboxylation conductance (m * s^-1)
 real gCO2      = (1/gbnd + 1/gstm + 1/gcar)^(-1);                         //canopy conductance to CO2 diffusion (m * s^-1)
-real Gamma     = cGamma * cQ10gamma^((Tc - 20)/10);                       //CO2 compensation point (ppm)
+real Gamma     = cGamma * cQ10gamma^((vectTc(t+1) - 20)/10);              //CO2 compensation point (ppm)
 real epsilon   = cepsilon * (gammaCO2 - Gamma) / (gammaCO2 + 2*Gamma);    //light use efficiency (g * J^-1)
 real fphotmaxn = epsilon * Ilight * gCO2 * comega * (gammaCO2 - Gamma);   //numerator of f_phot_max
 real fphotmaxd = epsilon * Ilight + gCO2 * comega * (gammaCO2 - Gamma);   //denominator of f_phot_max
@@ -13,12 +13,12 @@ func real fphot(real xsdw){
 
 //maintenance respiration (g * m^-2 * s^-1)
 func real fresp(real xsdw){
-    return (crespSHT * (1 - ctau) * xsdw + crespRT * ctau * xsdw) * cQ10resp^((Tc - 25)/10);
+    return (crespSHT * (1 - ctau) * xsdw + crespRT * ctau * xsdw) * cQ10resp^((vectTc(t+1) - 25)/10);
 };
 
 //specific growth rate (s^-1)
 func real rgr(real xnsdw, real xsdw){
-    return cgrMax * xnsdw / (xnsdw + cgamma * xsdw) * cQ10gr^((Tc - 20)/10);
+    return cgrMax * xnsdw / (xnsdw + cgamma * xsdw) * cQ10gr^((vectTc(t+1) - 20)/10);
 };
 
 //rhs ODEs system
@@ -41,23 +41,17 @@ func real phi2(real xnsdw, real xsdw){
 
 // Solution of the ODEs system, we use a fixed point method to deal with non-linearity
 int j = 0;
-real err1 = toll2 + 1;
-real err2 = toll2 + 1;
-real w0 = vectDW(0,t);
-real v0 = vectDW(1,t);
-real w1 = 0.;
-real v1 = 0.;
-while(((err1 > toll2) || (err2 > toll2)) && (j < Nmax)){
-    w1 = phi1(w0, v0);
-    v1 = phi2(w0, v0);
-    err1 = abs(w1 - w0);
-    err2 = abs(v1 - v0);
+real err = toll2 + 1;
+real[int] w0 = [vectDW(0,t), vectDW(1,t)];
+real[int] w1 = [0., 0.];
+while((err > toll2) && (j < Nmax)){
+    w1 = [phi1(w0[0], w0[1]), phi2(w0[0], w0[1])];
+    err = max(abs(w1[0] - w0[0]), abs(w1[1] - w0[1]));
     w0 = w1;
-    v0 = v1;
     j++;
 }
 
-vectDW(:,t+1) = [w1, v1];
+vectDW(:,t+1) = [w1[0], w1[1]];
 Time[t+1] = Time[t] + dt;
 
 cout << "X_nsdw = " << vectDW(0,t+1) << endl;

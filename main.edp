@@ -15,8 +15,8 @@ for (int t = 0; t < N; t++){
 
     // As Ta we take integral mean of T, air temperature scalar field computed in Naranjani_energy.edp:
     // (Naranjani uses Kelvin degrees, we want to use Celsius)
-    Ta = int3d(Th)(T)/int3d(Th)(1.0) - 273.15;
-    Tc= Ta-1;           // approximation suggested by Agricola Moderna
+    vectTa(t+1) = int3d(Th)(T)/int3d(Th)(1.0) - 273.15;
+    vectTc(t+1) = vectTa(t+1) - 1;           // approximation suggested by Agricola Moderna
     cout << "Tc = " << Tc << endl;
 
     gammaCO2 = int3d(Th)(co2 * 1e6 * (1-chi))/int3d(Th)(1-chi);
@@ -51,28 +51,8 @@ for (int t = 0; t < N; t++){
     cout << "\n" << endl;
 }
 
-//plot([[Time, Time]], wait=true, ps="NSDWplot.eps");
-//plot([Time, vectDW[1][]], ps="SDWplot.eps");
+// Export data for plotting:
+ofstream file("plotDW.txt");
 
-//include "ffmatlib.idp"
-
-//ffSaveData(vectDW, "export_DW.txt");
-//ffSaveData(Time,"export_time.txt");
-
-
-ofstream gnu("plotNSDW.gp");
 for (int i = 0; i < N+1; i++)
-        gnu << Time[i]/(24*60*60) << " " << vectDW(0,i) << endl;
-
-ofstream gnu("plotSDW.gp");
-for (int i = 0; i < N+1; i++)
-        gnu << Time[i]/(24*60*60) << " " << vectDW(1,i) << endl;
-
-//exec("echo 'plot \"plotNSDW.gp\" w l \n pause 5 \n set term postscript \n set output \"gnuplot.eps\" \n replot \n quit' | gnuplot");
-
-/*ofstream gnu("plot.gp");
-for (int i = 0; i < N; i++)
-    gnu << Time[i] << " " << vectDW(1,i) << endl;
-
-exec("echo 'plot \"plotSDW.gp\" w l \n pause 5 \n set term postscript \n set output \"gnuplot.eps\" \n replot \n quit' | gnuplot");
-*/
+    file << Time[i]/(24*60*60) << " " << vectDW(0,i) << " " << vectDW(1,i) << " " << vectTa(i) << " " << vectTc(i) << endl;

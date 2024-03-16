@@ -70,10 +70,15 @@ real toll2 = 1e-3;
 real Xnsdw = 6.75e-5;
 real Xsdw = 2.25e-5;
 
-//Vectors for dry weight data storage in time:
+// Vectors for dry weight data storage in time:
 int[int] Time(N+1);
 real[int, int] vectDW(2,N+1);
 vectDW(:,0) = [Xnsdw, Xsdw];
+// Vectors for temperature data storage in time:
+real[int] vectTa(N+1);
+real[int] vectTc(N+1);
+vectTa(0) = Ta;
+vectTc(0) = Tc;
 
 
 // GRAAMANS:
