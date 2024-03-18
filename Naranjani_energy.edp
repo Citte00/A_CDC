@@ -1,3 +1,4 @@
+// ENERGY EQUATION:
 func TambK = Tamb + 273.15;  //Scalar field, ambient temperature in Kelvin
 
 Qh T, tau;
@@ -16,14 +17,15 @@ problem energy (T, tau)
 
 energy;
 
-// Plot del risultato:
+// Temperature plot:
 int[int] ordT=[1];
 savevtk("Temperature.vtk", Th, T, dataname="Temperature", order=ordT);
 
-func h2oinit=0.85; // dal paper
-func co2init=0.00153; //dal paper
+// SPECIES MASS FRACTION EQUATION:
+func h2oinit=0.85;    // from paper
+func co2init=0.00153; // from paper
 Qh h2o, co2, hv, c;
-real Rh2o=0, Rco2=0; //reaction term, always zero (in our model)
+real Rh2o=0, Rco2=0;  //reaction term, always zero (in our model)
 
 problem massH2O (h2o, hv)
     = int3d(Th)(rhoa*[ux, uy, uz]'*grad(h2o)*hv )

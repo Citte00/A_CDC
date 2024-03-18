@@ -1,15 +1,13 @@
 include "data.edp"
-
-//Tc=21.2 di giorno e Tc=20.8 di notte (overdubbed essere conseguenza dell'accensione/spegnimento dei led)
 include "Naranjani_newton.edp"
 
-// N si trova in Van Henten data, cambia x aumentare iterazioni per introdurre giorno/notte !!!!!
-
+// N is defined in "data.edp", we will need to change it when dealing with day/night rotation!!!!!
 for (int t = 0; t < N; t++){
 
     cout << "Day: " << t+1 << endl;
 
-    real night=0; //dobbiamo capire come gestire notte e giorno
+    //TODO
+    real night = 0;
 
     include "Naranjani_energy.edp"
 
@@ -21,6 +19,7 @@ for (int t = 0; t < N; t++){
 
     gammaCO2 = int3d(Th)(co2 * 1e6 * (1-chi))/int3d(Th)(1-chi);
     cout << "gammaCO2 = " << gammaCO2 << endl;
+
     // integral mean and change of unit (now we want it g/m^3):
     gammaH2Oair = int3d(Th)(h2o * rhoa * 1e+3 * (1-chi))/int3d(Th)(1-chi);
     gammaH2Osur = int3d(Th)(h2o * rhoa * 1e+3 * chi)/int3d(Th)(chi);
@@ -29,21 +28,21 @@ for (int t = 0; t < N; t++){
 
     include "VanHenten.edp"
 
-    // Convertiamo u.m. dei valori da inserire su Naranjani
-    real fph=fphot(Xsdw);
+    // We convert the u.m. of values to insert in Naranjani
+    real fph = fphot(Xsdw); // (g/m^2)
     cout << "fphot = " << fph << endl;
-    // fph è g/m^(2)
-    Sco2=fph/1000; //da g a kg
+
+    Sco2=fph/1000; // g -> kg
     Sh2o=fph/1000;
-    //dobbiamo arrivare ad avere kg/m^3
-    //prendiamo come lunghezza caratteristica l'altezza della pianta (cfr. Naranjani)
-    //conversione 1 a 1, dividiamo per 1m
+    // We need kg/m^3
+    // We set as characteristic length the height of the plant (cfr. Naranjani)
+    // 1:1 conversion, we divide for 1m
 
     //ofstream file("result.txt");
     //file << "X_nsdw = " << Xnsdw << "\n";
     //file << "X_sdw = " << Xsdw << "\n";
 
-    //Compute LAI from Xsdw using formula provided by Van Henten:
+    //Compute LAI from Xsdw using the formula provided by Van Henten:
     LAI = (1-ctau)*clar*Xsdw;
 
     include "Graamans.edp"

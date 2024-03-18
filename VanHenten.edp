@@ -1,27 +1,27 @@
-real gcar      = ccar1 * vectTc(t+1)^2 + ccar2 * vectTc(t+1) + ccar3;     //carboxylation conductance (m * s^-1)
-real gCO2      = (1/gbnd + 1/gstm + 1/gcar)^(-1);                         //canopy conductance to CO2 diffusion (m * s^-1)
-real Gamma     = cGamma * cQ10gamma^((vectTc(t+1) - 20)/10);              //CO2 compensation point (ppm)
-real epsilon   = cepsilon * (gammaCO2 - Gamma) / (gammaCO2 + 2*Gamma);    //light use efficiency (g * J^-1)
-real fphotmaxn = epsilon * Ilight * gCO2 * comega * (gammaCO2 - Gamma);   //numerator of f_phot_max
-real fphotmaxd = epsilon * Ilight + gCO2 * comega * (gammaCO2 - Gamma);   //denominator of f_phot_max
-real fphotmax  = fphotmaxn / fphotmaxd;                                   //gross carbon dioxide assimilation rate of the canopy (g * m^-2 * s^-1)
+real gcar      = ccar1 * vectTc(t+1)^2 + ccar2 * vectTc(t+1) + ccar3;     // Carboxylation conductance (m * s^-1)
+real gCO2      = (1/gbnd + 1/gstm + 1/gcar)^(-1);                         // Canopy conductance to CO2 diffusion (m * s^-1)
+real Gamma     = cGamma * cQ10gamma^((vectTc(t+1) - 20)/10);              // CO2 compensation point (ppm)
+real epsilon   = cepsilon * (gammaCO2 - Gamma) / (gammaCO2 + 2*Gamma);    // Light use efficiency (g * J^-1)
+real fphotmaxn = epsilon * Ilight * gCO2 * comega * (gammaCO2 - Gamma);   // Numerator of f_phot_max
+real fphotmaxd = epsilon * Ilight + gCO2 * comega * (gammaCO2 - Gamma);   // Denominator of f_phot_max
+real fphotmax  = fphotmaxn / fphotmaxd;                                   // Gross carbon dioxide assimilation rate of the canopy (g * m^-2 * s^-1)
 
-//gross canopy photosynthesis (g * m^-2 * s^-1)
+// Gross canopy photosynthesis (g * m^-2 * s^-1)
 func real fphot(real xsdw){
     return (1 - exp(-ck*clar*(1 - ctau) * xsdw)) * fphotmax;
 };
 
-//maintenance respiration (g * m^-2 * s^-1)
+// Maintenance respiration (g * m^-2 * s^-1)
 func real fresp(real xsdw){
     return (crespSHT * (1 - ctau) * xsdw + crespRT * ctau * xsdw) * cQ10resp^((vectTc(t+1) - 25)/10);
 };
 
-//specific growth rate (s^-1)
+// Specific growth rate (s^-1)
 func real rgr(real xnsdw, real xsdw){
     return cgrMax * xnsdw / (xnsdw + cgamma * xsdw) * cQ10gr^((vectTc(t+1) - 20)/10);
 };
 
-//rhs ODEs system
+// Rhs ODEs system
 func real f1(real xnsdw, real xsdw){
     return calpha * fphot(xsdw) - rgr(xnsdw, xsdw) * xsdw - fresp(xsdw) - (1 -cbeta)/cbeta * rgr(xnsdw, xsdw) * xsdw;
 };

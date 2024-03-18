@@ -1,6 +1,6 @@
-load "msh3" // Tool per generare la mesh 3d
-load "medit" // Tool per plottare la mesh
-load "iovtk" //Tool per plottare la pressione
+load "msh3"  // Generating mesh tool
+load "medit" // Mesh plotting tool
+load "iovtk" // Velocity and pressure plotting tool
 
 real Re=rhoa*U*L/mu; //Reynolds number
 cout<<"Re: "<<Re<<endl;
@@ -13,19 +13,19 @@ func chi = (x>=0.475 && x<=0.525 && y>=0.475 && y<=0.525 && z>=0 && z<=0.15);
 
 // medit("Mesh", Th);
 savemesh(Th, "Mesh_cube.mesh");
-// Su "FreeFem Documentation" ho trovato che le labels di default per le facce sono:
+// On "FreeFem Documentation" it says that default faces labels are:
 // 1: y=0 , 2: x=1 , 3: y=1 , 4: x=0 , 5: z=0 , 6: z=1
-// Dunque nel nostro caso abbiamo che: {2,4,5,6} = wall; 1 = inflow boundary ; 3 = outflow boundary
+// In the case at hand we have: {2,4,5,6} = wall; 1 = inflow boundary ; 3 = outflow boundary
 // Si potrebbe (in futuro) inserire un labeling delle facce da usare nella formulazione del problema, per maggiore chiarezza
 
 //Finite Elements Spaces:
 fespace Vh(Th, [P2, P2, P2]);
 Vh [ux,uy,uz] , [vx,vy,vz]; //Fluid velocity, test function
-Vh [ux1,uy1,uz1] , [dux,duy,duz]; //Fluid Velocity all'iterazione successiva, variazione tra un'iterazione e l'altra
+Vh [ux1,uy1,uz1] , [dux,duy,duz]; //Fluid Velocity at the next iteration, variation between one iteration and another
 
 fespace Qh(Th, P1);
-Qh p, q ; // pressione e test function
-Qh p1 ; // pressione all'iterazione successiva
+Qh p, q ; // pressure e test function
+Qh p1 ; // pressure at the next iteration
 //Qh rhoa = 1;
 
 //Macro
@@ -34,10 +34,10 @@ macro div(vx,vy,vz) ( dx(vx) + dy(vy) + dz(vz) ) //
 //macro DivRho(vx,vy,vz,rho) ( grad(rho)' * [vx,vy,vz] + rho * div(vx,vy,vz) ) //
 macro ugradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
 
-func h = 0; // Dato al bordo di Neumann
-func uIn = U; // Dato al bordo Dirichlet
+func h = 0;   // Neumann BC
+func uIn = U; // Dirichlet BC
 
-// Problema di Stokes (lineare) per inizializzare il metodo di Newton:
+// Stokes (linear) problem, used to initialized Newton's method:
 problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
 
 	= int3d(Th)(  1/Re*(grad(ux)'*grad(vx) + grad(uy)'*grad(vy) + grad(uz)'*grad(vz) )
@@ -50,7 +50,7 @@ problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
 	+ on(1, ux = 0 , uy = uIn , uz = 0 ) /* Dirichlet BCs sulla faccia 1 (inflow) */
 	+ int2d(Th,3)( h*vy ); /* Neumann BCs sulla faccia 3 (outflow) */
 
-// Navier Stokes linearizzato:
+// Linearized Navier Stokes:
 problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 	
 	= int3d(Th)( 
@@ -66,10 +66,11 @@ problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 	+ on(1, ux1 = 0 , uy1 = uIn , uz1 = 0 )
 	+ int2d(Th,3)( h*vy );
 
-// Macro contenente ciclo di Newton per la risoluzione:
-real toll = 1e-03; // Tolleranza per la variazione dell'errore (della fluid velocity u)
-int kmax = 300; // Numero massimo di iterazioni per capire se Newton diverge
 
+real toll = 1e-03; // Error variation tolerance (of fluid velocity u)
+int kmax = 300; // Maximum number of iteration for Newton to diverge
+
+// Macro containing Newton's iterations:
 macro NavierStokes(){
 	Stokes;
 
@@ -98,12 +99,11 @@ macro NavierStokes(){
 	}
 } //
 
-// Risoluzione del problema non-lineare usando Newton:
+// Non-linear problem solution with Newton's method:
 NavierStokes;
 
-// Plot del risultato:
+// Pressure and velocity plot:
 int[int] ord=[1];
 int[int] ord3=[1, 1, 1];
 savevtk("Pressure.vtk", Th, p, dataname="Pressure", order=ord);
 savevtk("Velocity.vtk", Th, [ux, uy, uz], dataname="Velocity", order=ord3);
-
