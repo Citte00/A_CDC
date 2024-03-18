@@ -29,7 +29,7 @@ Moreover:
 ## Additional remarks
 * The (given) intensity of the led is 45 W/m^2 or 4.6*45 PPFD (considering a complete light spectrum).
 * The temperature is considered in K in `Naranjani_energy.edp`, meanwhile in °C in `VanHenten.edp` and `Graamans.edp`.
-* The source terms for H2O (`Sh2o`) and for CO2 (`Sco2`) are obtained, based on the molar balance of the photosynthesis reaction equation, from the concentration balance the gross canopy photosynthesis (`fphot`). The unit of measure of `Sh2o` and `Sco2` is kg/m^3, while `fphot` is in g* m^-2* s^-1. 
+* The source terms for H2O (`Sh2o`) and for CO2 (`Sco2`) are obtained, based on the molar balance of the photosynthesis reaction equation, from the gross canopy photosynthesis (`fphot`). The unit of measure of `Sh2o` and `Sco2` is kg/m^3, while `fphot` is in g* m^-2* s^-1. 
 * The amount of latent heat exchanged is calculated in `Graamans.edp` and used as a source term in `Naranjani_energy.edp`.
 * The physical value for the air viscosity `mu` should be 1e-5; however, greater values are considered to allow computation in local PCs.
 
