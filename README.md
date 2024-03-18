@@ -16,7 +16,7 @@ The model implemented is inspired by the following papers:
 * [Plant factories; crop transpiration and energy balance - Graamans, van den Dobbelsteen, Meinenb,Stanghellini](https://www.sciencedirect.com/science/article/pii/S0308521X16306515)
 
 The model proposed in each paper are implemented in the respective files:
-* in `Naranjani_newton.edp`, the Navier-Stokes equantion are solved in a 3D cube cell (through the Newton method);
+* in `Naranjani_newton.edp`, the Navier-Stokes equantions are solved in a 3D cube cell (through the Newton method);
 * in `Naranjani_energy.edp`, energy balance equation and species mass fraction equations are solved;
 * in `VanHenten.edp`, the system of ODE is solved through the Crank Nicolson method;
 * in `Graamans.edp`, the equations for the heat exchange are solved.
