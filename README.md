@@ -1,9 +1,9 @@
 # NAPDE Project - Biophysical model of evapotranspiration during plant growth
-## Authors: Ciarimboli Luca, Citterio Lorenzo, Dell'Otto Marianna
-## University supervisors: Perotto Simona, Ferro Nicola
-## External supervisor: Antona Alessandro
+#### Authors: Ciarimboli Luca, Citterio Lorenzo, Dell'Otto Marianna
+#### University supervisors: Perotto Simona, Ferro Nicola
+#### External supervisor: Antona Alessandro
 
-
+## General description
 This project is part of the course 052497 - "NUMERICAL ANALYSIS FOR PARTIAL DIFFERENTIAL EQUATIONS" at Politecnico di Milano 
 The goal of this project is to simulate the growth of a lettuce plant in a vertical farm to quantize the evapotranspiration.
 The project is done in collaboration with Agricola Moderna. The code is implemented with the use of [FreeFEM](https://freefem.org/)
@@ -26,4 +26,5 @@ Moreover:
 
 ## Remarks
 To merge the results obtained by each paper and create a global model, we performed the following physical transformation:
+
 
