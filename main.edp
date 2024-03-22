@@ -15,7 +15,7 @@ for (int t = 0; t < N; t++){
     // (Naranjani uses Kelvin degrees, we want to use Celsius)
     vectTa(t+1) = int3d(Th)(T)/int3d(Th)(1.0) - 273.15;
     vectTc(t+1) = vectTa(t+1) - 1;           // approximation suggested by Agricola Moderna
-    cout << "Tc = " << Tc << endl;
+    cout << "Tc = " << vectTc(t+1) << endl;
 
     gammaCO2 = int3d(Th)(co2 * 1e6 * (1-chi))/int3d(Th)(1-chi);
     cout << "gammaCO2 = " << gammaCO2 << endl;

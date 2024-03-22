@@ -31,7 +31,7 @@ int N=(tmax - t0)/dt;
 
 // NARANJANI:
 real L = 1;             // Characteristic length of the cell (m)
-real mu = 10;           // Air viscosity
+real mu = 1e-2;           // Air viscosity
 real U = 0.3;           // Characteristic velocity and inlet boundary velocity (Dirichlet condition NS)
 real Tamb = 25;         // Ambient Temperature (Celsius): boundary cond. in cell energy balance
 

@@ -1,4 +1,3 @@
-// R_net EQUATION:
 Rnet = (1 - rhor) * Ilight * CAC;
 cout << "R_net = " << Rnet << endl;
 
