@@ -1,2 +1,0 @@
-mesh Th = square(4, 5);
-plot(Th, wait=1);

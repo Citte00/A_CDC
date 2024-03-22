@@ -1,7 +1,0 @@
-int local = mpirank + 1;
-int global;
-
-mpiAllReduce(local, global, mpiCommWorld, mpiSUM);
-
-if (mpirank == 0)
-  cout << "The sum is " << global << endl;
