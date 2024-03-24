@@ -24,7 +24,7 @@ The model proposed in each paper are implemented in the respective files:
 Moreover:
 * `main.edp` contains the code to run a 20-days simulation;
 * `data.edp` contains all the physical constant needed;
-* `commands.txt` contains all the commands needed for the generation of the gnuplot file.
+* `plot_commands.sh` contains all the commands needed for the generation of the gnuplot file.
 
 ## Additional remarks
 * The (given) intensity of the led is 45 W/m^2 or 4.6*45 PPFD (considering a complete light spectrum).
