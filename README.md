@@ -8,7 +8,7 @@ This project is part of the course 052497 - "NUMERICAL ANALYSIS FOR PARTIAL DIFF
 
 The goal of this project is to simulate the growth of a lettuce plant in a vertical farm to quantize the evapotranspiration.
 
-The project is done in collaboration with Agricola Moderna. The code is implemented with the use of [FreeFEM](https://freefem.org/). For the visualization of the plots [ParaView](https://www.paraview.org/) and [Matlab](https://it.mathworks.com/products/matlab.html) are employed.
+The project is done in collaboration with [Agricola Moderna](https://agricolamoderna.com/). The code is implemented with the use of [FreeFEM](https://freefem.org/). For the visualization of the plots [ParaView](https://www.paraview.org/) and [Matlab](https://it.mathworks.com/products/matlab.html) are employed.
 
 The model implemented is inspired by the following papers, which are included in the `doc` folder:
 * [Computational analysis of the environment in an indoor vertical farming system -  Naranjani,Najafianashrafi, Pascual et al.](https://escholarship.org/uc/item/0hd561bp)
