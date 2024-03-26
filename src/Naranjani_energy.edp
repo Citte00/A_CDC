@@ -1,0 +1,60 @@
+// ENERGY EQUATION:
+func TambK = Tamb + 273.15;  //Scalar field, ambient temperature in Kelvin
+
+Qh T, tau;
+Qh Q= Ilight; //photon energy per area (coerente con VanHenten)
+if (night==1){
+	Q=0;
+}
+problem energy (T, tau)
+    = int3d(Th)(rhoa*Cp*[ux, uy, uz]'*grad(T)*tau + lambda*grad(T)'*grad(tau))
+    -int3d(Th)(lambdaE*tau*chi)
+    +on(1,3, T=TambK)
+    -int2d(Th,6)(-Q/lambda*tau)
+    -int2d(Th,2)(tau * 0.)
+    -int2d(Th,4)(tau * 0.)
+    -int2d(Th,5)(tau * 0.);
+
+energy;
+
+// Temperature plot:
+int[int] ordT=[1];
+savevtk("Temperature.vtk", Th, T, dataname="Temperature", order=ordT);
+
+// SPECIES MASS FRACTION EQUATION:
+func h2oinit=0.85;    // from paper
+func co2init=0.00153; // from paper
+Qh h2o, co2, hv, c;
+real Rh2o=0, Rco2=0;  //reaction term, always zero (in our model)
+
+problem massH2O (h2o, hv)
+    = int3d(Th)(rhoa*[ux, uy, uz]'*grad(h2o)*hv )
+    - int3d(Th)(Rh2o*hv+Sh2o*hv*chi)
+	 +on(1, h2o=h2oinit);
+	 -int2d(Th,2)(hv * 0.)
+	 -int2d(Th,3)(hv * 0.)
+     -int2d(Th,4)(hv * 0.)
+     -int2d(Th,5)(hv * 0.)
+     -int2d(Th,6)(hv * 0.);
+    //BC ?
+
+massH2O;
+//cout<<"h2o mass fraction: "<<h2o<<endl;
+int[int] ordh=[1];
+savevtk("massh2o.vtk", Th, h2o, dataname="Mass_h2o", order=ordh);
+
+problem massCO2 (co2, c)
+    = int3d(Th)(rhoa*[ux, uy, uz]'*grad(co2)*c )
+    -int3d(Th)(Rco2*c+Sco2*c*chi)
+	+on(1, co2=co2init);
+	-int2d(Th,2)(c * 0.)
+	-int2d(Th,3)(c * 0.)
+    -int2d(Th,4)(c * 0.)
+    -int2d(Th,5)(c * 0.)
+    -int2d(Th,6)(c * 0.);
+    //BC ?
+
+massCO2;
+//cout<<"co2 mass fraction: "<<co2<<endl;
+int[int] ordc=[1];
+savevtk("massco2.vtk", Th, co2, dataname="Mass_co2", order=ordc);

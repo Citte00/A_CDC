@@ -1,0 +1,57 @@
+include "data.edp"
+include "Naranjani_newton.edp"
+
+// N is defined in "data.edp", we will need to change it when dealing with day/night rotation!!!!!
+for (int t = 0; t < N; t++){
+
+    cout << "Day: " << t+1 << endl;
+
+    //TODO
+    real night = 0;
+
+    include "Naranjani_energy.edp"
+
+    // As Ta we take integral mean of T, air temperature scalar field computed in Naranjani_energy.edp:
+    // (Naranjani uses Kelvin degrees, we want to use Celsius)
+    vectTa(t+1) = int3d(Th)(T)/int3d(Th)(1.0) - 273.15;
+    vectTc(t+1) = vectTa(t+1) - 1;           // approximation suggested by Agricola Moderna
+    cout << "Tc = " << vectTc(t+1) << endl;
+
+    gammaCO2 = int3d(Th)(co2 * 1e6 * (1-chi))/int3d(Th)(1-chi);
+    cout << "gammaCO2 = " << gammaCO2 << endl;
+
+    // integral mean and change of unit (now we want it g/m^3):
+    gammaH2Oair = int3d(Th)(h2o * rhoa * 1e+3 * (1-chi))/int3d(Th)(1-chi);
+    gammaH2Osur = int3d(Th)(h2o * rhoa * 1e+3 * chi)/int3d(Th)(chi);
+    cout << "gammaH2Oair = " << gammaH2Oair << endl;
+    cout << "gammaH2Osur = " << gammaH2Osur << endl;
+
+    include "VanHenten.edp"
+
+    // We convert the u.m. of values to insert in Naranjani
+    real fph = fphot(Xsdw); // (g/m^2)
+    cout << "fphot = " << fph << endl;
+
+    Sco2=fph/1000; // g -> kg
+    Sh2o=fph/1000;
+    // We need kg/m^3
+    // We set as characteristic length the height of the plant (cfr. Naranjani)
+    // 1:1 conversion, we divide for 1m
+
+    //ofstream file("result.txt");
+    //file << "X_nsdw = " << Xnsdw << "\n";
+    //file << "X_sdw = " << Xsdw << "\n";
+
+    //Compute LAI from Xsdw using the formula provided by Van Henten:
+    LAI = (1-ctau)*clar*Xsdw;
+
+    include "Graamans.edp"
+
+    cout << "\n" << endl;
+}
+
+// Export data for plotting:
+ofstream file("plotDW.txt");
+
+for (int i = 0; i < N+1; i++)
+    file << Time[i]/(24*60*60) << " " << vectDW(0,i) << " " << vectDW(1,i) << " " << vectTa(i) << " " << vectTc(i) << endl;

@@ -1,0 +1,21 @@
+Rnet = (1 - rhor) * Ilight * CAC;
+cout << "R_net = " << Rnet << endl;
+
+
+// H EQUATION:
+real ra = 305 * (l / U)^(1/2) / LAI;            // Aerodynamic resistance to heat
+real rs = 60 * (1500 + PPFD) / (200 + PPFD);    // Surface resistance
+
+H = - LAI * rhoa * Cp / ra;     // H = heat from crop to air, actually it goes on the other way so H<0!
+// The "-" comes from "Tc-Ta" at the numerator, that is omitted since =-1 by assumption (row 14 in main.edp)
+cout << "H = " << H << endl;
+
+
+// LAMBDA_E EQUATION:
+// From the energy balance it is easily computed:
+real lambdaE = Rnet - H;
+cout << "lambdaE = " << lambdaE << endl;
+
+// The aim is to compute lambdaH: latent heat of the evaporation of water
+real lambdaH = (ra + rs) * lambdaE / (LAI * (gammaH2Osur - gammaH2Oair));
+cout << "lambdaH = " << lambdaH << endl;
