@@ -2,14 +2,18 @@ load "msh3"  // Generating mesh tool
 load "medit" // Mesh plotting tool
 load "iovtk" // Velocity and pressure plotting tool
 
+include "getARGV.idp"
+
 real Re=rhoa*U*L/mu; //Reynolds number
 cout<<"Re: "<<Re<<endl;
 
+int meshSize = getARGV("-n", 10);
+
 //Mesh Generation
-mesh3 Th = cube(10, 10, 10, [L*x,L*y,L*z]);
+mesh3 Th = cube(meshSize, meshSize, meshSize, [L*x,L*y,L*z]);
 
 //Crop position indicator function:
-func chi = (x>=0.475 && x<=0.525 && y>=0.475 && y<=0.525 && z>=0 && z<=0.15);
+func chi = (z>=0 && z<=0.15);
 
 // medit("Mesh", Th);
 savemesh(Th, "Mesh_cube.mesh");
@@ -34,7 +38,6 @@ macro div(vx,vy,vz) ( dx(vx) + dy(vy) + dz(vz) ) //
 //macro DivRho(vx,vy,vz,rho) ( grad(rho)' * [vx,vy,vz] + rho * div(vx,vy,vz) ) //
 macro ugradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
 
-func h = 0;   // Neumann BC
 func uIn = U; // Dirichlet BC
 
 // Stokes (linear) problem, used to initialized Newton's method:
@@ -47,8 +50,8 @@ problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
 	- int3d(Th)( (-g) * vz ) /* r.h.s. della weak formulation */
 
 	+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) /* Dirichlet BCs sulle pareti laterali (wall) */
-	+ on(1, ux = 0 , uy = uIn , uz = 0 ) /* Dirichlet BCs sulla faccia 1 (inflow) */
-	+ int2d(Th,3)( h*vy ); /* Neumann BCs sulla faccia 3 (outflow) */
+	+ on(1, ux = 0 , uy = uIn , uz = 0 ); /* Dirichlet BCs sulla faccia 1 (inflow) */
+	/* Neumann BCs sulla faccia 3 (outflow) */
 
 // Linearized Navier Stokes:
 problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
@@ -56,15 +59,16 @@ problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
 	= int3d(Th)( 
 
 		    ugradv(ux,uy,uz,ux1,uy1,uz1)' * [vx,vy,vz] +
-			1/Re* ( grad(ux1)'*grad(vx) + grad(uy1)'*grad(vy) + grad(uz1)'*grad(vz) ) -
-		     div(vx,vy,vz) * p1 +
-		     div(ux1, uy1, uz1) * q )
+		    ugradv(ux1,uy1,uz1,uz,uy,uz)' * [vx,vy,vz] +
+			1/Re * ( grad(ux1)'*grad(vx) + grad(uy1)'*grad(vy) + grad(uz1)'*grad(vz) ) -
+		    div(vx,vy,vz) * p1 +
+		    div(ux1, uy1, uz1) * q)
 
-	- int3d(Th)( (-g) * vz )
+
+	- int3d(Th)( (-g) * vz + ugradv(ux,uy,uz,ux,uy,uz)' * [vx,vy,vz])
 
 	+ on(2,4,5,6, ux1 = 0 , uy1 = 0 , uz1 = 0 )
-	+ on(1, ux1 = 0 , uy1 = uIn , uz1 = 0 )
-	+ int2d(Th,3)( h*vy );
+	+ on(1, ux1 = 0 , uy1 = uIn , uz1 = 0 );
 
 
 real toll = 1e-03; // Error variation tolerance (of fluid velocity u)
