@@ -1,6 +1,7 @@
 load "msh3"  // Generating mesh tool
 load "medit" // Mesh plotting tool
 load "iovtk" // Velocity and pressure plotting tool
+load "MUMPS_seq" // Solvers
 
 include "getARGV.idp"
 
@@ -41,7 +42,7 @@ macro ugradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , 
 func uIn = U; // Dirichlet BC
 
 // Stokes (linear) problem, used to initialized Newton's method:
-problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
+problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q], solver=sparsesolver )
 
 	= int3d(Th)(  1/Re*(grad(ux)'*grad(vx) + grad(uy)'*grad(vy) + grad(uz)'*grad(vz) )
 			 - div(vx,vy,vz) * p 
@@ -54,7 +55,7 @@ problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q] )
 	/* Neumann BCs sulla faccia 3 (outflow) */
 
 // Linearized Navier Stokes:
-problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q] )
+problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q], solver=sparsesolver )
 	
 	= int3d(Th)( 
 
