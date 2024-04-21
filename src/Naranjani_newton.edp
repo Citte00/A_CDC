@@ -1,20 +1,13 @@
-load "msh3"  // Generating mesh tool
-load "medit" // Mesh plotting tool
-load "iovtk" // Velocity and pressure plotting tool
-load "MUMPS_seq" // Solvers
+load "msh3"                         // Generating mesh tool
+load "medit"                        // Mesh plotting tool
+load "iovtk"                        // Velocity and pressure plotting tool
+load "MUMPS_seq"                    // Solvers
 
 include "getARGV.idp"
 
-real Re=rhoa*U*L/mu; //Reynolds number
-cout<<"Re: "<<Re<<endl;
-
-int meshSize = getARGV("-n", 10);
-
 //Mesh Generation
+int meshSize = getARGV("-n", 10);
 mesh3 Th = cube(meshSize, meshSize, meshSize, [L*x,L*y,L*z]);
-
-//Crop position indicator function:
-func chi = (z>=0 && z<=0.15);
 
 // medit("Mesh", Th);
 savemesh(Th, "Mesh_cube.mesh");

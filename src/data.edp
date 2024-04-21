@@ -3,7 +3,7 @@ real Cp = 1012.;                // Specific heat capacity of air
 real lambda = 0.024;            // Thermal conductivity of the air
 real Ilight = 45.;              // Light intensity (in W/m^2) -> given
 real g = 9.81;                  // Gravitational acceleration
-real rhoa = 1;               // Density of the air (kg/m^3) taken from internet
+real rhoa = 1.29;               // Density of the air (kg/m^3) taken from internet
 
 real Sh2o=0.;                   // Source term for H2O concentration balance
 real Sco2=0.;                   // Source term for CO2 concentration balance
@@ -30,11 +30,14 @@ int N=(tmax - t0)/dt;
 
 
 // NARANJANI:
-real L = 1;             // Characteristic length of the cell (m)
-real mu = 1;           // Air viscosity
-real U = 1;           // Characteristic velocity and inlet boundary velocity (Dirichlet condition NS)
-real Tamb = 25;         // Ambient Temperature (Celsius): boundary cond. in cell energy balance
+real L = 1;                     // Characteristic length of the cell (m)
+real mu = 1e-3;                 // Air viscosity
+real U = 0.3;                   // Characteristic velocity and inlet boundary velocity (Dirichlet condition NS)
+real Tamb = 25;                 // Ambient Temperature (Celsius): boundary cond. in cell energy balance
+real Re = rhoa*U*L/mu;          //Reynolds number
+cout << "Re: " << Re << endl;
 
+func chi = (z>=0 && z<=0.15);    // Crop position indicator function
 
 // VAN HENTEN:
 //Constants for the dfferential equations
