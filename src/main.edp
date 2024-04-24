@@ -6,8 +6,8 @@ for (int t = 0; t < N; t++){
 
     cout << "Day: " << t+1 << endl;
 
-    //TODO
-    real night = 0;
+    if(N % 3 == 2)
+        isNight = true;
 
     include "Naranjani_energy.edp"
 
