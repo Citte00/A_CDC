@@ -3,8 +3,6 @@ func TambK = Tamb + 273.15;  //Scalar field, ambient temperature in Kelvin
 
 Qh T, tau;
 Qh Q = Ilight; //photon energy per area (coerente con VanHenten)
-if(isNight)
-	Q = 0.;
 
 problem energy (T, tau)
     = int3d(Th)(rhoa*Cp*[ux, uy, uz]'*grad(T)*tau + lambda*grad(T)'*grad(tau))

@@ -6,9 +6,6 @@ for (int t = 0; t < N; t++){
 
     cout << "Day: " << t+1 << endl;
 
-    if(N % 3 == 2)
-        isNight = true;
-
     include "Naranjani_energy.edp"
 
     // As Ta we take integral mean of T, air temperature scalar field computed in Naranjani_energy.edp:
@@ -46,8 +43,6 @@ for (int t = 0; t < N; t++){
     LAI = (1-ctau)*clar*Xsdw;
 
     include "Graamans.edp"
-
-    isNight = false;
 
     cout << "\n" << endl;
 }

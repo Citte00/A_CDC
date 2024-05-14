@@ -24,7 +24,7 @@ real gammaH2Osur = 0.;          // Vapour concentration on canopy surface
 
 // Number of iterations in time
 int t0 = 0;
-int tmax = 86400*20;    // seconds in 20 days
+int tmax = 86400*20;            // seconds in 20 days
 int dt = 24*60*60;
 int N = 3 * (tmax - t0)/dt;
 
