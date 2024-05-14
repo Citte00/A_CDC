@@ -9,4 +9,4 @@ cd ${PBS_O_WORKDIR}
 export mkPrefix=/u/sw
 source ${mkPrefix}/etc/profile
 module load gcc-glibc
-/u/opt/bin/FreeFem++ main.edp -n 25 -v 0 > output_file.txt 2>&1
+/u/opt/bin/FreeFem++ main.edp -n 20 -v 0 > output_file.txt 2>&1

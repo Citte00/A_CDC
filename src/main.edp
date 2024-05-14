@@ -47,11 +47,14 @@ for (int t = 0; t < N; t++){
 
     include "Graamans.edp"
 
+    isNight = false;
+
     cout << "\n" << endl;
 }
 
 // Export data for plotting:
 ofstream file("plotDW.txt");
+file << "Time" << " " << "NonStructuralDryWeight" << " " << "StructuralDryWeight" << " " << "TemperatureAir" << " " << "TemperatureCanopy" << endl;
 
 for (int i = 0; i < N+1; i++)
     file << Time[i]/(24*60*60) << " " << vectDW(0,i) << " " << vectDW(1,i) << " " << vectTa(i) << " " << vectTc(i) << endl;

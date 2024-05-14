@@ -1,6 +1,6 @@
 // GENERAL DATA:
 real Cp = 1012.;                // Specific heat capacity of air
-real lambda = 0.024;            // Thermal conductivity of the air
+real lambda = 0.024;            // Thermal conductivity of the air (W/m*K)
 real Ilight = 45.;              // Light intensity (in W/m^2) -> given
 real g = 9.81;                  // Gravitational acceleration
 real rhoa = 1.29;               // Density of the air (kg/m^3) taken from internet
@@ -26,19 +26,22 @@ real gammaH2Osur = 0.;          // Vapour concentration on canopy surface
 int t0 = 0;
 int tmax = 86400*20;    // seconds in 20 days
 int dt = 24*60*60;
-int N=(tmax - t0)/dt;
+int N = 3 * (tmax - t0)/dt;
 
 
 // NARANJANI:
 real L = 1;                     // Characteristic length of the cell (m)
-real mu = 10;                 // Air viscosity
+real mu = 1e-1;                 // Air viscosity
 real U = 0.3;                   // Characteristic velocity and inlet boundary velocity (Dirichlet condition NS)
 real Tamb = 25;                 // Ambient Temperature (Celsius): boundary cond. in cell energy balance
 real Re = rhoa*U*L/mu;          //Reynolds number
 cout << "Re: " << Re << endl;
 
-func chi = (z>=0 && z<=0.15);    // Crop position indicator function
-real night = 0.;                 // Flag for define day-night
+real Dh2o = 0.2178e-4;          //Diffusion coefficient water
+real Dco2 = 0.1381e-4;          //Diffusion coefficient carbon dioxyde
+
+func chi = (x>=0.01 && x<=0.99 && x>=0.01 && x<=0.99 && z>=0 && z<=0.15);    // Crop position indicator function
+bool isNight = false;            // Flag for define day-night
 
 // VAN HENTEN:
 //Constants for the dfferential equations
@@ -71,7 +74,7 @@ real ccar3     = -2.64e-3;       // (m * s^-1)
 
 // Stopping criteria for fixed point method
 real Nmax = 100;
-real toll2 = 1e-3;
+real toll2 = 1e-6;
 
 // Initial dry weigth values (provided by Agricola Moderna)
 real Xnsdw = 6.75e-5;
