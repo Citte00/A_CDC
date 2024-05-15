@@ -23,7 +23,8 @@ Qh h2o, co2, hv, c;
 real Rh2o=0, Rco2=0;  //reaction term, always zero (in our model)
 
 problem massH2O (h2o, hv)
-    = int3d(Th)(rhoa*[ux, uy, uz]'*grad(h2o)*hv + rhoa * Dh2o * grad(h2o) * grad(hv))
+    = int3d(Th)(rhoa * [ux, uy, uz]' * grad(h2o) * hv
+                + rhoa * Dh2o * grad(h2o)' * grad(hv))
     - int3d(Th)(Rh2o*hv + Sh2o*hv*chi)
 	 +on(1,3, h2o=h2oinit);
 
@@ -33,8 +34,9 @@ int[int] ordh=[1];
 savevtk("massh2o.vtk", Th, h2o, dataname="Mass_h2o", order=ordh);
 
 problem massCO2 (co2, c)
-    = int3d(Th)(rhoa*[ux, uy, uz]'*grad(co2)*c + rhoa * Dco2 * grad(co2) * grad(c))
-    -int3d(Th)(Rco2*c+Sco2*c*chi)
+    = int3d(Th)(rhoa * [ux, uy, uz]' * grad(co2) * c
+                + rhoa * Dco2 * grad(co2)' * grad(c))
+    -int3d(Th)(Rco2*c + Sco2*c*chi)
 	+on(1,3, co2=co2init);
 
 massCO2;
