@@ -151,5 +151,5 @@ cout << "R_net = " << Rnet << endl;
 // Lambda_E equation
 real lambdaE = 0.;                                              // Latent heat exchange (W/m^2)
 real lambdaH = 0.;                                              // Latent heat of the evaporation of water (W/m^2)
-real Lv = 	2453;                                               // Volumetric latent heat of vaporization (Wikipedia) (MJ m−3)
+real Lv      = 2453;                                            // Volumetric latent heat of vaporization (Wikipedia) (MJ m−3)
 real ET      = 0.;                                              // Evapotranspiration
