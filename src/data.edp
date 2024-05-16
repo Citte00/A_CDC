@@ -134,11 +134,12 @@ vectTc(0) = Tc;
 // GRAAMANS:
 
 // H EQUATION:
+real PPFD = 4.6 * Ilight;                                      // Photosynthetic photon flux densities (micromol / m^2 s)
 real ra   = 0.;                                                // Aerodynamic resistance to heat
 real rs   = 60 * (1500 + PPFD) / (200 + PPFD);                 // Surface resistance
 real LAI  = 0.;                                                // Leaf Area Index
 real H    = 0.;                                                // Sensible heat exchange
-real PPFD = 4.6 * Ilight;                                      // Photosynthetic photon flux densities (micromol / m^2 s)
+
 // Coefficient 4.6 considers the complete light spectrum
 real l = 0.11;                                                 // Mean leaf diameter
 
