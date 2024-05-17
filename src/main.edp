@@ -35,12 +35,9 @@ for (int t = 0; t < N; t++){
     // We set as characteristic length the height of the plant (cfr. Naranjani)
     // 1:1 conversion, we divide for 1m
 
-    //ofstream file("result.txt");
-    //file << "X_nsdw = " << Xnsdw << "\n";
-    //file << "X_sdw = " << Xsdw << "\n";
-
     //Compute LAI from Xsdw using the formula provided by Van Henten:
     LAI = (1-ctau)*clar*Xsdw;
+    cout << "LAI = " << LAI << endl;
 
     include "Graamans.edp"
 

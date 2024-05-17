@@ -6,6 +6,39 @@ fphotmaxn = epsilon * Ilight * gCO2 * comega * (gammaCO2 - Gamma);
 fphotmaxd = epsilon * Ilight + gCO2 * comega * (gammaCO2 - Gamma);
 fphotmax  = fphotmaxn / fphotmaxd;
 
+// Gross canopy photosynthesis (g * m^-2 * s^-1)
+func real fphot(real xsdw){
+    return (1 - exp(-ck*clar*(1 - ctau) * xsdw)) * fphotmax;
+};
+
+// Maintenance respiration (g * m^-2 * s^-1)
+func real fresp(real xsdw){
+    return (crespSHT * (1 - ctau) * xsdw + crespRT * ctau * xsdw) * cQ10resp^((vectTc(t+1) - 25)/10);
+};
+
+// Specific growth rate (s^-1)
+func real rgr(real xnsdw, real xsdw){
+    return cgrMax * xnsdw / (xnsdw + cgamma * xsdw) * cQ10gr^((vectTc(t+1) - 20)/10);
+};
+
+// Rhs ODEs system
+func real f1(real xnsdw, real xsdw){
+    return calpha * fphot(xsdw) - rgr(xnsdw, xsdw) * xsdw - fresp(xsdw) - (1 -cbeta)/cbeta * rgr(xnsdw, xsdw) * xsdw;
+};
+
+func real f2(real xnsdw, real xsdw){
+    return rgr(xnsdw, xsdw) * xsdw;
+};
+
+// We employed Crank-Nicolson to solve the ODEs system
+func real phi1(real xnsdw, real xsdw){
+    return vectDW(0,t) + dt/2 * (f1(vectDW(0,t), vectDW(1,t))  + f1(xnsdw, xsdw));
+};
+
+func real phi2(real xnsdw, real xsdw){
+    return vectDW(1,t) + dt/2 * (f2(vectDW(0,t), vectDW(1,t))  + f2(xnsdw, xsdw));
+};
+
 // Solution of the ODEs system, we use a fixed point method to deal with non-linearity
 int j = 0;
 real err = toll2 + 1;

@@ -13,5 +13,5 @@ cout << "lambdaE = " << lambdaE << endl;
 
 // The aim is to compute lambdaH:
 lambdaH = (ra + rs) * lambdaE / (LAI * (gammaH2Osur - gammaH2Oair));
-ET = lambdaH / Lv;
-cout << "ET = " << ET << endl;
+vectET(t+1) = lambdaE / lambdav;
+cout << "ET = " << vectET(t+1) << endl;

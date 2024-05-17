@@ -1,7 +1,7 @@
 // GENERAL DATA:
-real Cp = 1012.;                // Specific heat capacity of air
+real Cp = 1012.;                // Specific heat capacity of air (J/Kg K)
 real lambda = 0.024;            // Thermal conductivity of the air (W/m*K)
-real Ilight = 45.;              // Light intensity (in W/m^2) -> given
+real Ilight = 45.;              // Light intensity (W/m^2) -> given
 real g = 9.81;                  // Gravitational acceleration
 real rhoa = 1.29;               // Density of the air (kg/m^3) taken from internet
 
@@ -16,24 +16,33 @@ func chi = (x>=0.01 && x<=0.99 && x>=0.01 && x<=0.99 && z>=0 && z<=0.15);    // 
 // NARANJANI:
 // NS equation
 real L = 1;                     // Characteristic length of the cell (m)
-real mu = 1e-1;                 // Air viscosity
+real mu = 1e-2;                 // Air viscosity
 real U = 0.3;                   // Characteristic velocity and inlet boundary velocity (Dirichlet condition NS)
 real Re = rhoa*U*L/mu;          //Reynolds number
 cout << "Re: " << Re << endl;
 
 // Energy Balance equation
 real Tamb = 25;                 // Ambient Temperature (Celsius): boundary cond. in cell energy balance
+func TambK = Tamb + 273.15;     // Scalar field, ambient temperature in Kelvin
 real Ta = 0.;                   // Temperature of air
 real Tc = 0.;                   // Temperature of Canopy (= Ta - 1)
 // Tc=21.2 during the day e Tc=20.8 during the night (it should be a consequence of turning on/off LED lights)
+
+// Vectors for temperature data storage in time:
+real[int] vectTa(N+1);
+real[int] vectTc(N+1);
+vectTa(0) = Ta;
+vectTc(0) = Tc;
 
 // Mass fraction equation
 real Dh2o = 0.2178e-4;          //Diffusion coefficient water
 real Dco2 = 0.1381e-4;          //Diffusion coefficient carbon dioxyde
 
-real Sh2o=0.;                   // Source term for H2O concentration balance
-real Sco2=0.;                   // Source term for CO2 concentration balance
+real Sh2o = 0.;                 // Source term for H2O concentration balance
+real Sco2 = 0.;                 // Source term for CO2 concentration balance
 // Source terms Sh20, Sco2 are updated at each iteration from Van Henten (from fphot)
+func h2oinit = 0.85;            // from paper
+func co2init = 0.00153;         // from paper
 
 real gammaCO2 = 0.;             // CO2 concentration in air
 real gammaH2Oair = 0.;          // Vapour concentration in air
@@ -78,39 +87,6 @@ real fphotmaxn = 0.;             // Numerator of f_phot_max
 real fphotmaxd = 0.;             // Denominator of f_phot_max
 real fphotmax  = 0.;             // Gross carbon dioxide assimilation rate of the canopy (g * m^-2 * s^-1)
 
-// Gross canopy photosynthesis (g * m^-2 * s^-1)
-func real fphot(real xsdw){
-    return (1 - exp(-ck*clar*(1 - ctau) * xsdw)) * fphotm ax;
-};
-
-// Maintenance respiration (g * m^-2 * s^-1)
-func real fresp(real xsdw){
-    return (crespSHT * (1 - ctau) * xsdw + crespRT * ctau * xsdw) * cQ10resp^((vectTc(t+1) - 25)/10);
-};
-
-// Specific growth rate (s^-1)
-func real rgr(real xnsdw, real xsdw){
-    return cgrMax * xnsdw / (xnsdw + cgamma * xsdw) * cQ10gr^((vectTc(t+1) - 20)/10);
-};
-
-// Rhs ODEs system
-func real f1(real xnsdw, real xsdw){
-    return calpha * fphot(xsdw) - rgr(xnsdw, xsdw) * xsdw - fresp(xsdw) - (1 -cbeta)/cbeta * rgr(xnsdw, xsdw) * xsdw;
-};
-
-func real f2(real xnsdw, real xsdw){
-    return rgr(xnsdw, xsdw) * xsdw;
-};
-
-// We employed Crank-Nicolson to solve the ODEs system
-func real phi1(real xnsdw, real xsdw){
-    return vectDW(0,t) + dt/2 * (f1(vectDW(0,t), vectDW(1,t))  + f1(xnsdw, xsdw));
-};
-
-func real phi2(real xnsdw, real xsdw){
-    return vectDW(1,t) + dt/2 * (f2(vectDW(0,t), vectDW(1,t))  + f2(xnsdw, xsdw));
-};
-
 // Stopping criteria for fixed point method
 real Nmax = 100;
 real toll2 = 1e-6;
@@ -124,21 +100,15 @@ int[int] Time(N+1);
 real[int, int] vectDW(2,N+1);
 vectDW(:,0) = [Xnsdw, Xsdw];
 
-// Vectors for temperature data storage in time:
-real[int] vectTa(N+1);
-real[int] vectTc(N+1);
-vectTa(0) = Ta;
-vectTc(0) = Tc;
-
 
 // GRAAMANS:
 
 // H EQUATION:
 real PPFD = 4.6 * Ilight;                                      // Photosynthetic photon flux densities (micromol / m^2 s)
-real ra   = 0.;                                                // Aerodynamic resistance to heat
-real rs   = 60 * (1500 + PPFD) / (200 + PPFD);                 // Surface resistance
+real ra   = 0.;                                                // Aerodynamic resistance to heat (s/m)
+real rs   = 60 * (1500 + PPFD) / (200 + PPFD);                 // Surface resistance (s/m)
 real LAI  = 0.;                                                // Leaf Area Index
-real H    = 0.;                                                // Sensible heat exchange
+real H    = 0.;                                                // Sensible heat exchange (W/m^2)
 
 // Coefficient 4.6 considers the complete light spectrum
 real l = 0.11;                                                 // Mean leaf diameter
@@ -147,10 +117,11 @@ real l = 0.11;                                                 // Mean leaf diam
 real rhor = 0.05;                                               // Reflection coefficient
 real CAC = 0.9;                                                 // Cultivation area cover (% of projected leaf area to cultivation area)
 real Rnet = (1 - rhor) * Ilight * CAC;                          // Net radiation, amount of radiation intercepted and absorbed by the crop
-cout << "R_net = " << Rnet << endl;
+cout << "R_net = " << Rnet << "Wm^2" << endl;
 
 // Lambda_E equation
 real lambdaE = 0.;                                              // Latent heat exchange (W/m^2)
 real lambdaH = 0.;                                              // Latent heat of the evaporation of water (W/m^2)
-real Lv      = 2453;                                            // Volumetric latent heat of vaporization (Wikipedia) (MJ m−3)
-real ET      = 0.;                                              // Evapotranspiration
+real lambdav = 2257;                                            // Latent heat of vaporization (Wikipedia) (J/g)
+real[int] vectET(N+1);                                            // Mass water evapotranspiration rate (g/m^2 s)
+vectET(0) = 0.;
