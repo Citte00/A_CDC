@@ -26,7 +26,7 @@ for (int t = 0; t < N; t++){
     include "VanHenten.edp"
 
     // We convert the u.m. of values to insert in Naranjani
-    real fph = fphot(Xsdw); // (g/m^2)
+    real fph = fphot(vectDW(1,t+1)); // (g/m^2)
     cout << "fphot = " << fph << endl;
 
     Sco2 = fph/1000; // g -> kg
@@ -36,7 +36,7 @@ for (int t = 0; t < N; t++){
     // 1:1 conversion, we divide for 1m
 
     //Compute LAI from Xsdw using the formula provided by Van Henten:
-    LAI = (1-ctau)*clar*Xsdw;
+    LAI = (1-ctau)*clar*vectDW(1,t+1);
     cout << "LAI = " << LAI << endl;
 
     include "Graamans.edp"
