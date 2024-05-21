@@ -68,7 +68,7 @@ real cQ10resp = 2;               // Q10 factor of the maintenance respiration
 
 //Constants for f_phot equation
 real ck        = 0.9;            // Extinction coefficient
-real clar      = 75e-3;          // Structural leaf area (m^2 * g)
+real clar      = 75e-3;          // Structural leaf area (m^2/g)
 real comega    = 1.83e-3;        // Estimated CO2 density at 15◦C temperature and ambient pressure (g * m^-3)
 real cGamma    = 40;             // CO2 compensation point at 20°C (ppm)
 real cQ10gamma = 2;              // Q10 value which accounts for the effect of temperature on Γ
