@@ -16,7 +16,7 @@ func chi = (x>=0.01 && x<=0.99 && x>=0.01 && x<=0.99 && z>=0 && z<=0.15);    // 
 // NARANJANI:
 // NS equation
 real L = 1;                     // Characteristic length of the cell (m)
-real mu = 1e-2;                 // Air viscosity
+real mu = 10;                 // Air viscosity
 real U = 0.3;                   // Characteristic velocity and inlet boundary velocity (Dirichlet condition NS)
 real Re = rhoa*U*L/mu;          //Reynolds number
 cout << "Re: " << Re << endl;
@@ -108,7 +108,7 @@ real PPFD = 4.6 * Ilight;                                      // Photosynthetic
 real ra   = 0.;                                                // Aerodynamic resistance to heat (s/m)
 real rs   = 60 * (1500 + PPFD) / (200 + PPFD);                 // Surface resistance (s/m)
 real LAI  = 0.;                                                // Leaf Area Index
-real H    = 0.;                                                // Sensible heat exchange (W/m^2)
+real Qsens  = 0.;                                             // Sensible heat exchange (W/m^2)
 
 // Coefficient 4.6 considers the complete light spectrum
 real l = 0.11;                                                 // Mean leaf diameter
@@ -116,12 +116,15 @@ real l = 0.11;                                                 // Mean leaf diam
 // R_net equation:
 real rhor = 0.05;                                               // Reflection coefficient
 real CAC = 0.9;                                                 // Cultivation area cover (% of projected leaf area to cultivation area)
-real Rnet = (1 - rhor) * Ilight * CAC;                          // Net radiation, amount of radiation intercepted and absorbed by the crop
+real Rnet = (1 - rhor) * Ilight * CAC;                          // Net radiation (W/m^2): radiation intercepted and absorbed by the crop
 cout << "R_net = " << Rnet << "Wm^2" << endl;
 
 // Lambda_E equation
-real lambdaE = 0.;                                              // Latent heat exchange (W/m^2)
-real lambdaH = 0.;                                              // Latent heat of the evaporation of water (W/m^2)
-real lambdav = 2257;                                            // Latent heat of vaporization (Wikipedia) (J/g)
-real[int] vectET(N+1);                                            // Mass water evapotranspiration rate (g/m^2 s)
-vectET(0) = 0.;
+real Qlatent = 0.;                                        // Latent heat flux (W/m^2)
+real Lv = 2453;                                            // Specific latent heat of vaporization (MJ/m^3)
+
+real[int] vectETmass(N+1);                                  // Water mass evapotranspiration rate (g/m^2 s)
+vectETmass(0) = 0.;
+
+real[int] vectETvol(N+1);                                   // Water volume evapotranspiration rate (mm/s)
+vectETvol(0) = 0.;
