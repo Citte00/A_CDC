@@ -29,8 +29,8 @@ for (int t = 0; t < N; t++){
     real fph = fphot(vectDW(1,t+1)); // (g/m^2)
     cout << "fphot = " << fph << endl;
 
-    Sco2 = fph/1000;
-    Sh2o = 0.41*fph/1000;
+    Sco2 = -fph/1000;
+    Sh2o = -0.41*fph/1000;
     // We need kg/m^3
     // We set as characteristic length the height of the plant (cfr. Naranjani)
     // 1:1 conversion, we divide for 1m
