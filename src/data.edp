@@ -16,9 +16,9 @@ func chi = (x>=0.01 && x<=0.99 && x>=0.01 && x<=0.99 && z>=0 && z<=0.15);    // 
 // NARANJANI:
 // NS equation
 real L = 1;                     // Characteristic length of the cell (m)
-real mu = 1e-1;                 // Air viscosity
+real mu = 1.85e-5;              // Air viscosity at 300K
 real U = 3e-5;                  // Characteristic velocity and inlet boundary velocity (Dirichlet condition NS)
-real Re = rhoa*U*L/mu;          //Reynolds number
+real Re = rhoa*U*L/mu;          // Reynolds number
 cout << "Re: " << Re << endl;
 
 // Energy Balance equation

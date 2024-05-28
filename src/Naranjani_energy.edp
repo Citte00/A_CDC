@@ -6,7 +6,7 @@ problem energy (T, tau)
     = int3d(Th)(rhoa*Cp*[ux, uy, uz]'*grad(T)*tau + lambda*grad(T)'*grad(tau))
     -int3d(Th)(-Qlatent*tau*chi)
     +on(1,3, T=TambK)
-    -int2d(Th,6)(-Q*tau);
+    -int2d(Th,6)(Q*tau);
 
 energy;
 
