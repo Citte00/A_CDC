@@ -1,0 +1,166 @@
+load "msh3"                         //Generating mesh tool
+load "medit"                        //Mesh plotting tool
+load "iovtk"                        //Velocity and pressure plotting tool
+load "MUMPS_seq"                    //Solvers
+
+include "data.edp"
+
+ofstream file("method_check2.txt");
+file << "meshSize" << " " << "ux" << " " << "uy" << " " << "uz" << " " << "T" << " " << "H2O" << " " << "CO2" << endl;
+
+//Mesh Generation
+int[int] meshSize = [30]; //[10, 15, 20, 25, 30];
+
+for(int i = 0; i < 1; i++){
+	mesh3 Th = cube(meshSize[i], meshSize[i], meshSize[i], [L*x,L*y,L*z]);
+
+	//Finite Elements Spaces:
+	fespace Vh(Th, [P2, P2, P2]);
+	Vh [ux,uy,uz],    [vx,vy,vz];      // Fluid velocity, test function
+	Vh [ux1,uy1,uz1], [dux,duy,duz];   // Fluid Velocity at the next iteration, variation between one iteration and another
+
+	fespace Qh(Th, P1);
+	Qh p, q ; // pressure e test function
+	Qh p1 ; // pressure at the next iteration
+
+	//Temperature Functions;
+	Qh T, tau;
+	Qh Q = Ilight; //photon energy per area (coerente con VanHenten)
+	Qlatent = Rnet;
+
+	// SPECIES MASS FRACTION EQUATION:
+	Qh h2o, co2, hv, c;
+	
+	real Rh2o=0, Rco2=0;  //reaction term, always zero (in our model)
+	Sh2o = 2.489e-4;
+	Sco2 = 3.16e-5;
+
+	//Macro
+	macro grad(v) [dx(v), dy(v), dz(v)] //
+	macro div(vx,vy,vz) ( dx(vx) + dy(vy) + dz(vz) ) //
+	macro ugradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
+
+	func uIn = U; // Dirichlet BC
+
+
+	// STOKES PROBLEM (linear), used to initialized Newton's method:
+	problem Stokes([ux,uy,uz,p] , [vx,vy,vz,q], solver = sparsesolver)
+
+		= int3d(Th)(  1/Re*(grad(ux)'*grad(vx) + grad(uy)'*grad(vy) + grad(uz)'*grad(vz) )
+				 - div(vx,vy,vz) * p 
+		     		+ div(ux, uy, uz) * q ) /* l.h.s. della weak formulation */
+	
+		- int3d(Th)( (-g) * vz ) /* r.h.s. della weak formulation */
+
+		+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) /* Dirichlet BCs sulle pareti laterali (wall) */
+		+ on(1, ux = 0 , uy = uIn , uz = 0 ); /* Dirichlet BCs sulla faccia 1 (inflow) */
+		/* Neumann BCs sulla faccia 3 (outflow) */
+
+
+	// LINEARIZED NAVIER STOKES:
+	problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q], solver = sparsesolver)
+	
+		= int3d(Th)(ugradv(ux,uy,uz,ux1,uy1,uz1)' * [vx,vy,vz] +
+		    		ugradv(ux1,uy1,uz1,ux,uy,uz)' * [vx,vy,vz] +
+				1/Re * ( grad(ux1)'*grad(vx) + grad(uy1)'*grad(vy) + grad(uz1)'*grad(vz) ) -
+		    		div(vx,vy,vz) * p1 +
+		    		div(ux1, uy1, uz1) * q)
+		
+		- int3d(Th)( (-g) * vz + ugradv(ux,uy,uz,ux,uy,uz)' * [vx,vy,vz])
+
+		+ on(2,4,5,6, ux1 = 0 , uy1 = 0 , uz1 = 0 )
+		+ on(1, ux1 = 0 , uy1 = uIn , uz1 = 0 );
+
+
+	real toll = 1e-06; // Error variation tolerance (of fluid velocity u)
+	int kmax = 300; // Maximum number of iteration for Newton to diverge
+
+	// Macro containing Newton's iterations:
+	macro NavierStokes(){
+	
+		Stokes;
+	
+		for(int k = 0; k < kmax; k++){
+
+			linNS;
+
+	    		dux[] = ux1[] - ux[];
+	    		duy[] = uy1[] - uy[];
+	    		duz[] = uz1[] - uz[];
+
+	    		real err = sqrt( int3d(Th) ( grad(dux)'*grad(dux) + grad(duy)'*grad(duy) + grad(duz)'*grad(duz) ) ) /
+				   sqrt( int3d(Th) ( grad(ux)'*grad(ux) + grad(uy)'*grad(uy) + grad(uz)'*grad(uz) ) );
+
+			ux[] = ux1[];
+			uy[] = uy1[];
+			uz[] = uz1[];
+	 	
+			p[] = p1[];
+
+	    		if( err < toll ){
+    	    			cout << "Value of the error after " << k+1 << " iterations: " << err << endl ;
+    	    			break;
+	    		}
+
+		    	if( k == kmax - 1 )
+    		    		cout << "WARNING: Newton method does not converge in " << kmax << " iterations!" << endl;
+			}
+	} //
+
+
+	// TEMPERATURE EQUATION	
+	problem energy (T, tau, solver = sparsesolver)
+    		= int3d(Th)(rhoa*Cp*[ux, uy, uz]'*grad(T)*tau + lambda*grad(T)'*grad(tau))
+    		- int3d(Th)(-Qlatent*tau*chi)
+       		- int2d(Th,6)(Q*tau)
+		+ on(1,3, T=TambK);
+
+
+	// SPECIES MASS FRACTION EQUATION:
+	problem massH2O (h2o, hv, solver = sparsesolver)
+    		= int3d(Th)(rhoa*[ux, uy, uz]'*grad(h2o)*hv)
+    		- int3d(Th)(Rh2o*hv + Sh2o*hv*chi)
+		+ on(1,3, h2o=h2oinit);
+
+	problem massCO2 (co2, c, solver = sparsesolver)
+    		= int3d(Th)(rhoa*[ux, uy, uz]'*grad(co2)*c)
+    		- int3d(Th)(Rco2*c + Sco2*c*chi)
+		+ on(1,3, co2=co2init);
+
+
+	// Non-linear problem solution with Newton's method:
+	NavierStokes;
+
+	// Temperature equation solution
+	energy;
+
+	// h2o concentration
+	massH2O;
+
+	// co2 concentration
+	massCO2;
+
+
+	// Velocity plot:
+	string velocity = "Velocity_" + i + ".vtk";
+	int[int] ord3 = [1, 1, 1];
+	savevtk(velocity, Th, [ux, uy, uz], dataname="Velocity", order=ord3);
+
+	// Temperature plot:
+	string temperature = "Temperature_" + i + ".vtk";
+	int[int] ordT=[1];
+	savevtk(temperature, Th, T, dataname="Temperature", order=ordT);
+	
+	// H2O plot
+	string massh2o = "MAssh2o_" + i + ".vtk";
+	int[int] ordh=[1];
+	savevtk(massh2o, Th, h2o, dataname="Mass_h2o", order=ordh);
+
+	// CO2 plot
+	string massco2 = "Massco2_" + i + ".vtk";
+	int[int] ordc=[1];
+	savevtk(massco2, Th, co2, dataname="Mass_co2", order=ordc);
+
+
+	file << "N=" << meshSize[i] << " " << ux(0.5,0.5,0.5) << " " << uy(0.5,0.5,0.5) << " " << uz(0.5,0.5,0.5) << " " << T(0.5,0.5,0.5) << " " << h2o(0.5,0.5,0.05) << " " << co2(0.5,0.5,0.05) << endl;
+}
