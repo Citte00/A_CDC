@@ -24,7 +24,9 @@ Vh [ux1,uy1,uz1] , [dux,duy,duz]; //Fluid Velocity at the next iteration, variat
 fespace Qh(Th, P1);
 Qh p, q ; // pressure e test function
 Qh p1 ; // pressure at the next iteration
-//Qh rhoa = 1;
+
+// Crop position indicator function
+Qh chi = (x>=0.06 && x<=0.94 && y>=0.06 && y<=0.94 && z>=0 && z<=0.15);
 
 //Macro
 macro grad(v) [dx(v), dy(v), dz(v)] //
