@@ -26,7 +26,7 @@ Qh p, q ; // pressure e test function
 Qh p1 ; // pressure at the next iteration
 
 // Crop position indicator function
-Qh chi = (x>=0.06 && x<=0.94 && y>=0.06 && y<=0.94 && z>=0 && z<=0.15);
+Qh Chi = (x>=0.06 && x<=0.94 && y>=0.06 && y<=0.94 && z>=0 && z<=0.15);
 
 //Macro
 macro grad(v) [dx(v), dy(v), dz(v)] //
