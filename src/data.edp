@@ -21,19 +21,12 @@ real absu = 0.;                 // Module of the velocity
 real Re = rhoa*U*L/mu;          // Reynolds number
 cout << "Re: " << Re << endl;
 
-func real xi(real theta){       // Upwind function
-    return cosh(theta)/sinh(theta) - 1/theta;
-}
-real h = 0.;                    // Discretization step
-
 // Energy Balance equation
 real muT = lambda/(Cp * rhoa);
 real Tamb = 25;                 // Ambient Temperature (Celsius): boundary cond. in cell energy balance
 func TambK = Tamb + 273.15;     // Scalar field, ambient temperature in Kelvin
 real Ta = 0.;                   // Temperature of air
 real Tc = 0.;                   // Temperature of Canopy (= Ta - 1), Tc=21.2 during the day e Tc=20.8 during the night (it should be a consequence of turning on/off LED lights)
-real tauT = 0.;                 // Stabilization function for energy balance equation
-real Pet = 0.;                  // Peclet number for energy balance equation
 
 // Vectors for temperature data storage in time:
 real[int] vectTa(N+1);
@@ -43,8 +36,6 @@ vectTc(0) = Tc;
 
 // H2O Mass fraction equation
 real Dh2o        = 0.2178e-4;       // Diffusion coefficient water (m^2/s)
-real Peh2o       = 0.;              // Peclet number for H2O mass fraction equation
-real tauh2o      = 0.;              // Stabilization function for H2O mass fraction equation
 real Sh2o        = 0.;              // Source term for H2O concentration balance, updated at each iteration from Van Henten (from fphot)
 real gammaH2Oair = 0.;              // Vapour concentration in air (g/m^3)
 real gammaH2Osur = 0.;              // Vapour concentration on canopy surface (g/m^3)
@@ -52,8 +43,6 @@ func h2oinit     = 0.85;            // from paper
 
 // CO2 Mass fraction equation
 real Dco2        = 0.1381e-4;       // Diffusion coefficient carbon dioxyde (m^2/s)
-real Peo2        = 0.;              // Peclet number for CO2 mass fraction equation
-real tauco2      = 0.;              // Stabilization function for CO2 mass fraction equation
 real Sco2        = 0.;              // Source term for CO2 concentration balance, updated at each iteration from Van Henten (from fphot)
 real gammaCO2    = 0.;              // CO2 concentration in air (PPM)
 func co2init     = 0.00153;         // from paper

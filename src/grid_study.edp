@@ -11,7 +11,14 @@ file << "meshSize" << " " << "ux" << " " << "uy" << " " << "uz" << " " << "T" <<
 //Mesh Generation
 int[int] meshSize = [10, 15, 20, 25, 30];
 
-for(int i = 0; i < 5; i++){
+real[int] errUx(meshSize.n);
+real[int] errUy(meshSize.n);
+real[int] errUz(meshSize.n);
+real[int] errT(meshSize.n);
+real[int] errH2O(meshSize.n);
+real[int] errCO2(meshSize.n);
+
+for(int i = 0; i < meshSize.n; i++){
 
 	mesh3 Th = cube(meshSize[i], meshSize[i], meshSize[i], [L*x,L*y,L*z]);
 
@@ -41,17 +48,16 @@ for(int i = 0; i < 5; i++){
 	//Macro
 	macro grad(v) [dx(v), dy(v), dz(v)] //
 	macro div(vx,vy,vz) ( dx(vx) + dy(vy) + dz(vz) ) //
-	macro ugradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
+ 	macro ugradv(ux,uy,uz,vx,vy,vz) [ [ux,uy,uz]'*grad(vx) , [ux,uy,uz]'*grad(vy) , [ux,uy,uz]'*grad(vz) ] //
 
 	func uIn = U; // Dirichlet BC
-
 
 	// STOKES PROBLEM (linear), used to initialized Newton's method:
 	problem Stokes([ux,uy,uz,p] , [vx,vy,vz,q], solver = sparsesolver)
 
 		= int3d(Th)(  1/Re*(grad(ux)'*grad(vx) + grad(uy)'*grad(vy) + grad(uz)'*grad(vz) )
-				 - div(vx,vy,vz) * p 
-		     		+ div(ux, uy, uz) * q ) /* l.h.s. della weak formulation */
+				- div(vx,vy,vz) * p
+	     		+ div(ux, uy, uz) * q ) /* l.h.s. della weak formulation */
 	
 		- int3d(Th)( (-g) * vz ) /* r.h.s. della weak formulation */
 
@@ -73,7 +79,6 @@ for(int i = 0; i < 5; i++){
 
 		+ on(2,4,5,6, ux1 = 0 , uy1 = 0 , uz1 = 0 )
 		+ on(1, ux1 = 0 , uy1 = uIn , uz1 = 0 );
-
 
 	real toll = 1e-06; // Error variation tolerance (of fluid velocity u)
 	int kmax = 300; // Maximum number of iteration for Newton to diverge
@@ -101,55 +106,60 @@ for(int i = 0; i < 5; i++){
 			p[] = p1[];
 
 	    		if( err < toll ){
-    	    			cout << "Value of the error after " << k+1 << " iterations: " << err << endl ;
-    	    			break;
+    	    		cout << "Value of the error after " << k+1 << " iterations: " << err << endl ;
+    	    		break;
 	    		}
 
 		    	if( k == kmax - 1 )
-    		    		cout << "WARNING: Newton method does not converge in " << kmax << " iterations!" << endl;
+    		    	cout << "WARNING: Newton method does not converge in " << kmax << " iterations!" << endl;
 			}
 	} //
 
-    absu = sqrt(int3d(Th)([ux, uy, uz]' * [ux, uy, uz]));
+    Qh absu = sqrt([ux, uy, uz]' * [ux, uy, uz]);
+    Qh tauK = 1/(2*absu*meshSize[i]);
 
 	// TEMPERATURE EQUATION
-	Pet = h*absu / (2*muT);
-    tauT = h/(2*absu) * xi(Pet);
-
 	problem energy (T, tau, solver = sparsesolver)
-    		= int3d(Th)([ux, uy, uz]'*grad(T)*tau + muT*grad(T)'*grad(tau))
-    		- int3d(Th)(-Qlatent/(lambda*rhoa) * tau * Chi)
-       		- int2d(Th,6)(Q * tau)
+    	= int3d(Th)([ux, uy, uz]'*grad(T)*tau + muT*grad(T)'*grad(tau))
+    	+ int3d(Th)(tauK * ([ux, uy, uz]'*grad(T)) * ([ux, uy, uz]'*grad(tau)))
+    	- int3d(Th)(tauK * (-Qlatent/(Cp*rhoa)) * ([ux, uy, uz]'*grad(tau)) * Chi)
+    	- int3d(Th)(-Qlatent/(Cp*rhoa) * tau * Chi)
+       	- int2d(Th,6)(Q * tau)
 		+ on(1,3, T=TambK);
 
-
 	// SPECIES MASS FRACTION EQUATION:
-	Peh2o = h*absu / (2*Dh2o);
-    tauh2o = h/(2*absu) * xi(Peh2o);
 	problem massH2O (h2o, hv, solver = sparsesolver)
-    		= int3d(Th)([ux, uy, uz]' * grad(h2o) * hv
-    		            + Dh2o * grad(h2o)' * grad(hv))
-    		- int3d(Th)(Sh2o/rhoa * hv * Chi)
+    	= int3d(Th)([ux, uy, uz]' * grad(h2o) * hv + Dh2o * grad(h2o)' * grad(hv))
+    	+ int3d(Th)(tauK * ([ux, uy, uz]'*grad(h2o)) * ([ux, uy, uz]'*grad(hv)))
+        - int3d(Th)(tauK * Sh2o/rhoa * ([ux, uy, uz]'*grad(hv)) * Chi)
+    	- int3d(Th)(Sh2o/rhoa * hv * Chi)
 		+ on(1,3, h2o=h2oinit);
 
 	problem massCO2 (co2, c, solver = sparsesolver)
-    		= int3d(Th)([ux, uy, uz]' * grad(co2) * c
-    		            + Dco2 * grad(co2)' * grad(c))
-    		- int3d(Th)(Sco2/rhoa * c * Chi)
+        = int3d(Th)([ux, uy, uz]' * grad(co2) * c + Dco2 * grad(co2)' * grad(c))
+    	+ int3d(Th)(tauK * ([ux, uy, uz]'*grad(co2)) * ([ux, uy, uz]'*grad(c)))
+        - int3d(Th)(tauK * Sco2/rhoa * ([ux, uy, uz]'*grad(c)) * Chi)
+    	- int3d(Th)(Sco2/rhoa * c * Chi)
 		+ on(1,3, co2=co2init);
 
 
 	// Non-linear problem solution with Newton's method:
 	NavierStokes;
+	errUx[i] = sqrt(int3d(Th)(grad(ux)'*grad(ux)));
+	errUy[i] = sqrt(int3d(Th)(grad(uy)'*grad(uy)));
+	errUz[i] = sqrt(int3d(Th)(grad(uz)'*grad(uz)));
 
 	// Temperature equation solution
 	energy;
+	errT[i] = sqrt(int3d(Th)(grad(T)'*grad(T)));
 
 	// h2o concentration
 	massH2O;
+	errH2O[i] = sqrt(int3d(Th)(grad(h2o)'*grad(h2o)));
 
 	// co2 concentration
 	massCO2;
+	errCO2[i] = sqrt(int3d(Th)(grad(co2)'*grad(co2)));
 
 
 	// Velocity plot:
@@ -172,6 +182,14 @@ for(int i = 0; i < 5; i++){
 	int[int] ordc=[1];
 	savevtk(massco2, Th, co2, dataname="Mass_co2", order=ordc);
 
-
 	file << "N=" << meshSize[i] << " " << ux(0.5,0.5,0.5) << " " << uy(0.5,0.5,0.5) << " " << uz(0.5,0.5,0.5) << " " << T(0.5,0.5,0.5) << " " << h2o(0.5,0.5,0.05) << " " << co2(0.5,0.5,0.05) << endl;
 }
+
+ofstream file2("method_check3.txt");
+file << "meshSize" << " " << "errUx" << " " << "errUy" << " " << "errUz" << " " << "errT" << " " << "errH2O" << " " << "errCO2" << endl;
+
+for(i=0; i < meshSize.n; i++){
+    file << "N=" << meshSize[i] << " " << errUx[i] << " " << errUy[i] << " " << errUz[i] << " " << errT[i] << " " << errH2O[i] << " " << errCO2[i] << endl;
+}
+
+
