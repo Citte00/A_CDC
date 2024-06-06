@@ -15,8 +15,8 @@ int N = (tmax - t0)/dt;
 // NARANJANI:
 // NS equation
 real L = 1;                     // Characteristic length of the cell (m)
-real mu = 1.85e-5;              // Air viscosity at 300K
-real U = 3e-5;                  // Characteristic velocity and inlet boundary velocity (Dirichlet condition NS)
+real mu = 1e-1;                 // Air viscosity at 300K
+real U = 0.3;                   // Characteristic velocity and inlet boundary velocity (Dirichlet condition NS)
 real absu = 0.;                 // Module of the velocity
 real Re = rhoa*U*L/mu;          // Reynolds number
 cout << "Re: " << Re << endl;

@@ -33,6 +33,7 @@ for(int i = 0; i < meshSize.n; i++){
 	Qh p, q ; // pressure e test function
 	Qh p1 ; // pressure at the next iteration
 	Qh Chi = (x>=0.06 && x<=0.94 && y>=0.06 && y<=0.94 && z>=0 && z<=0.15);
+	Qh tauK, absu;
 
 	//Temperature Functions;
 	Qh T, tau;
@@ -115,9 +116,6 @@ for(int i = 0; i < meshSize.n; i++){
 			}
 	} //
 
-    Qh absu = sqrt([ux, uy, uz]' * [ux, uy, uz]);
-    Qh tauK = 1/(2*absu*meshSize[i]);
-
 	// TEMPERATURE EQUATION
 	problem energy (T, tau, solver = sparsesolver)
     	= int3d(Th)([ux, uy, uz]'*grad(T)*tau + muT*grad(T)'*grad(tau))
@@ -145,6 +143,8 @@ for(int i = 0; i < meshSize.n; i++){
 
 	// Non-linear problem solution with Newton's method:
 	NavierStokes;
+	absu = sqrt([ux, uy, uz]' * [ux, uy, uz]);
+    tauK = 1/(2*absu*meshSize[i]);
 	errUx[i] = sqrt(int3d(Th)(grad(ux)'*grad(ux)));
 	errUy[i] = sqrt(int3d(Th)(grad(uy)'*grad(uy)));
 	errUz[i] = sqrt(int3d(Th)(grad(uz)'*grad(uz)));
@@ -188,7 +188,7 @@ for(int i = 0; i < meshSize.n; i++){
 ofstream file2("method_check3.txt");
 file << "meshSize" << " " << "errUx" << " " << "errUy" << " " << "errUz" << " " << "errT" << " " << "errH2O" << " " << "errCO2" << endl;
 
-for(i=0; i < meshSize.n; i++){
+for(i = 0; i < meshSize.n; i++){
     file << "N=" << meshSize[i] << " " << errUx[i] << " " << errUy[i] << " " << errUz[i] << " " << errT[i] << " " << errH2O[i] << " " << errCO2[i] << endl;
 }
 
