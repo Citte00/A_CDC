@@ -143,7 +143,7 @@ for(int i = 0; i < meshSize.n; i++){
 
 	// Non-linear problem solution with Newton's method:
 	NavierStokes;
-	absu = sqrt([ux, uy, uz]' * [ux, uy, uz]);
+	absu = sqrt(int3d(Th)([ux, uy, uz]' * [ux, uy, uz]));
     tauK = 1/(2*absu*meshSize[i]);
 	errUx[i] = sqrt(int3d(Th)(grad(ux)'*grad(ux)));
 	errUy[i] = sqrt(int3d(Th)(grad(uy)'*grad(uy)));
