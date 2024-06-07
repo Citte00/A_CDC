@@ -8,6 +8,9 @@ include "data.edp"
 ofstream file("method_check2.txt");
 file << "meshSize" << " " << "ux" << " " << "uy" << " " << "uz" << " " << "T" << " " << "H2O" << " " << "CO2" << endl;
 
+ofstream file2("method_check3.txt");
+file << "meshSize" << " " << "errUx" << " " << "errUy" << " " << "errUz" << " " << "errT" << " " << "errH2O" << " " << "errCO2" << endl;
+
 //Mesh Generation
 int[int] meshSize = [10, 15, 20, 25, 30];
 
@@ -21,8 +24,6 @@ real[int] errCO2(meshSize.n);
 for(int i = 0; i < meshSize.n; i++){
 
 	mesh3 Th = cube(meshSize[i], meshSize[i], meshSize[i], [L*x,L*y,L*z]);
-
-	h = 1/meshSize[i];
 
 	//Finite Elements Spaces:
 	fespace Vh(Th, [P2, P2, P2]);
@@ -143,8 +144,10 @@ for(int i = 0; i < meshSize.n; i++){
 
 	// Non-linear problem solution with Newton's method:
 	NavierStokes;
+
 	absu = sqrt(int3d(Th)([ux, uy, uz]' * [ux, uy, uz]));
     tauK = 1/(2*absu*meshSize[i]);
+
 	errUx[i] = sqrt(int3d(Th)(grad(ux)'*grad(ux)));
 	errUy[i] = sqrt(int3d(Th)(grad(uy)'*grad(uy)));
 	errUz[i] = sqrt(int3d(Th)(grad(uz)'*grad(uz)));
@@ -161,8 +164,7 @@ for(int i = 0; i < meshSize.n; i++){
 	massCO2;
 	errCO2[i] = sqrt(int3d(Th)(grad(co2)'*grad(co2)));
 
-
-	// Velocity plot:
+    // Velocity plot:
 	string velocity = "Velocity_" + i + ".vtk";
 	int[int] ord3 = [1, 1, 1];
 	savevtk(velocity, Th, [ux, uy, uz], dataname="Velocity", order=ord3);
@@ -183,13 +185,5 @@ for(int i = 0; i < meshSize.n; i++){
 	savevtk(massco2, Th, co2, dataname="Mass_co2", order=ordc);
 
 	file << "N=" << meshSize[i] << " " << ux(0.5,0.5,0.5) << " " << uy(0.5,0.5,0.5) << " " << uz(0.5,0.5,0.5) << " " << T(0.5,0.5,0.5) << " " << h2o(0.5,0.5,0.05) << " " << co2(0.5,0.5,0.05) << endl;
+    file2 << "N=" << meshSize[i] << " " << errUx[i] << " " << errUy[i] << " " << errUz[i] << " " << errT[i] << " " << errH2O[i] << " " << errCO2[i] << endl;
 }
-
-ofstream file2("method_check3.txt");
-file << "meshSize" << " " << "errUx" << " " << "errUy" << " " << "errUz" << " " << "errT" << " " << "errH2O" << " " << "errCO2" << endl;
-
-for(i = 0; i < meshSize.n; i++){
-    file << "N=" << meshSize[i] << " " << errUx[i] << " " << errUy[i] << " " << errUz[i] << " " << errT[i] << " " << errH2O[i] << " " << errCO2[i] << endl;
-}
-
-
