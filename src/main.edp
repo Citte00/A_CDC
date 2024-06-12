@@ -18,8 +18,8 @@ for (int t = 0; t < N; t++){
     cout << "gammaCO2 = " << gammaCO2 << endl;
 
     // integral mean and change of unit (now we want it g/m^3):
-    gammaH2Oair = int3d(Th)(h2o * rhoa * 1e3 * (1-chi))/int3d(Th)(1-chi);
-    gammaH2Osur = int3d(Th)(h2o * rhoa * 1e3 * chi)/int3d(Th)(chi);
+    gammaH2Oair = int3d(Th)(h2o * rhoa * 1e3 * (1-Chi))/int3d(Th)(1-Chi);
+    gammaH2Osur = int3d(Th)(h2o * rhoa * 1e3 * Chi)/int3d(Th)(Chi);
     cout << "gammaH2Oair = " << gammaH2Oair << endl;
     cout << "gammaH2Osur = " << gammaH2Osur << endl;
 

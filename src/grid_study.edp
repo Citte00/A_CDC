@@ -44,8 +44,8 @@ for(int i = 0; i < meshSize.n; i++){
 	// SPECIES MASS FRACTION EQUATION:
 	Qh h2o, co2, hv, c;
 
-	Sh2o = 2.489e-4;
-	Sco2 = 3.16e-5;
+	Sh2o = -2.489e-4;
+	Sco2 = -3.16e-5;
 
 	//Macro
 	macro grad(v) [dx(v), dy(v), dz(v)] //
