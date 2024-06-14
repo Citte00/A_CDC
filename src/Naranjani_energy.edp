@@ -4,9 +4,9 @@ Qh Q = Ilight; //photon energy per area
 
 problem energy (T, tau)
     = int3d(Th)(rhoa*Cp*[ux, uy, uz]'*grad(T)*tau + lambda*grad(T)'*grad(tau))
-    -int3d(Th)(-Qlatent*tau*Chi)
-    +on(1,3, T=TambK)
-    -int2d(Th,6)(Q*tau);
+    - int3d(Th)(-Qlatent*tau*Chi)
+    + on(1, T=TambK)
+    - int2d(Th,6)(Q*tau);
 
 energy;
 
@@ -22,7 +22,7 @@ problem massH2O (h2o, hv)
     = int3d(Th)(rhoa * [ux, uy, uz]' * grad(h2o) * hv
                 + rhoa * Dh2o * grad(h2o)' * grad(hv))
     - int3d(Th)(Rh2o*hv + Sh2o*hv*Chi)
-	 +on(1,3, h2o=h2oinit);
+	+ on(1, h2o=h2oinit);
 
 massH2O;
 
@@ -33,8 +33,8 @@ savevtk("massh2o.vtk", Th, h2o, dataname="Mass_h2o", order=ordh);
 problem massCO2 (co2, c)
     = int3d(Th)(rhoa * [ux, uy, uz]' * grad(co2) * c
                 + rhoa * Dco2 * grad(co2)' * grad(c))
-    -int3d(Th)(Rco2*c + Sco2*c*Chi)
-	+on(1,3, co2=co2init);
+    - int3d(Th)(Rco2*c + Sco2*c*Chi)
+	+ on(1, co2=co2init);
 
 massCO2;
 

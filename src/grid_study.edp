@@ -21,6 +21,8 @@ real[int] errT(meshSize.n);
 real[int] errH2O(meshSize.n);
 real[int] errCO2(meshSize.n);
 
+real absu = 0.;
+
 for(int i = 0; i < meshSize.n; i++){
 
 	mesh3 Th = cube(meshSize[i], meshSize[i], meshSize[i], [L*x,L*y,L*z]);
@@ -33,8 +35,9 @@ for(int i = 0; i < meshSize.n; i++){
 	fespace Qh(Th, P1);
 	Qh p, q ; // pressure e test function
 	Qh p1 ; // pressure at the next iteration
-	Qh Chi = (x>=0.06 && x<=0.94 && y>=0.06 && y<=0.94 && z>=0 && z<=0.15);
-	Qh tauK, absu;
+	Qh tauK;
+	Qh h = hTriangle;
+	// Qh Chi = (x>=0.06 && x<=0.94 && y>=0.06 && y<=0.94 && z>=0 && z<=0.15);
 
 	//Temperature Functions;
 	Qh T, tau;
@@ -60,8 +63,6 @@ for(int i = 0; i < meshSize.n; i++){
 		= int3d(Th)(  1/Re*(grad(ux)'*grad(vx) + grad(uy)'*grad(vy) + grad(uz)'*grad(vz) )
 				- div(vx,vy,vz) * p
 	     		+ div(ux, uy, uz) * q ) /* l.h.s. della weak formulation */
-	
-		- int3d(Th)( (-g) * vz ) /* r.h.s. della weak formulation */
 
 		+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) /* Dirichlet BCs sulle pareti laterali (wall) */
 		+ on(1, ux = 0 , uy = uIn , uz = 0 ); /* Dirichlet BCs sulla faccia 1 (inflow) */
@@ -77,7 +78,7 @@ for(int i = 0; i < meshSize.n; i++){
 		    		div(vx,vy,vz) * p1 +
 		    		div(ux1, uy1, uz1) * q)
 		
-		- int3d(Th)( (-g) * vz + ugradv(ux,uy,uz,ux,uy,uz)' * [vx,vy,vz])
+		- int3d(Th)(ugradv(ux,uy,uz,ux,uy,uz)' * [vx,vy,vz])
 
 		+ on(2,4,5,6, ux1 = 0 , uy1 = 0 , uz1 = 0 )
 		+ on(1, ux1 = 0 , uy1 = uIn , uz1 = 0 );
@@ -121,32 +122,29 @@ for(int i = 0; i < meshSize.n; i++){
 	problem energy (T, tau, solver = sparsesolver)
     	= int3d(Th)([ux, uy, uz]'*grad(T)*tau + muT*grad(T)'*grad(tau))
     	+ int3d(Th)(tauK * ([ux, uy, uz]'*grad(T)) * ([ux, uy, uz]'*grad(tau)))
-    	- int3d(Th)(tauK * (-Qlatent/(Cp*rhoa)) * ([ux, uy, uz]'*grad(tau)) * Chi)
-    	- int3d(Th)(-Qlatent/(Cp*rhoa) * tau * Chi)
-       	- int2d(Th,6)(Q * tau)
-		+ on(1,3, T=TambK);
+    	- int2d(Th,5)(-Qlatent/(Cp*rhoa) * tau)
+       	- int2d(Th,6)(Q/(Cp*rhoa) * tau)
+		+ on(1, T=TambK);
 
 	// SPECIES MASS FRACTION EQUATION:
 	problem massH2O (h2o, hv, solver = sparsesolver)
     	= int3d(Th)([ux, uy, uz]' * grad(h2o) * hv + Dh2o * grad(h2o)' * grad(hv))
     	+ int3d(Th)(tauK * ([ux, uy, uz]'*grad(h2o)) * ([ux, uy, uz]'*grad(hv)))
-        - int3d(Th)(tauK * Sh2o/rhoa * ([ux, uy, uz]'*grad(hv)) * Chi)
-    	- int3d(Th)(Sh2o/rhoa * hv * Chi)
-		+ on(1,3, h2o=h2oinit);
+    	- int2d(Th,5)(Sh2o/rhoa * hv)
+		+ on(1, h2o=h2oinit);
 
 	problem massCO2 (co2, c, solver = sparsesolver)
         = int3d(Th)([ux, uy, uz]' * grad(co2) * c + Dco2 * grad(co2)' * grad(c))
     	+ int3d(Th)(tauK * ([ux, uy, uz]'*grad(co2)) * ([ux, uy, uz]'*grad(c)))
-        - int3d(Th)(tauK * Sco2/rhoa * ([ux, uy, uz]'*grad(c)) * Chi)
-    	- int3d(Th)(Sco2/rhoa * c * Chi)
-		+ on(1,3, co2=co2init);
+    	- int2d(Th,5)(Sco2/rhoa * c)
+		+ on(1, co2=co2init);
 
 
 	// Non-linear problem solution with Newton's method:
 	NavierStokes;
 
-	absu = sqrt(int3d(Th)([ux, uy, uz]' * [ux, uy, uz]));
-    tauK = 1/(2*absu*meshSize[i]);
+	absu = max(abs(ux), abs(uy), abs(uz));
+    tauK = h/(2*absu);
 
 	errUx[i] = sqrt(int3d(Th)(grad(ux)'*grad(ux)));
 	errUy[i] = sqrt(int3d(Th)(grad(uy)'*grad(uy)));
