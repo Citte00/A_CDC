@@ -36,14 +36,14 @@ vectTc(0) = Tc;
 
 // H2O Mass fraction equation
 real Dh2o        = 0.2178e-4;       // Diffusion coefficient water (m^2/s)
-real Sh2o        = 0.;              // Source term for H2O concentration balance, updated at each iteration from Van Henten (from fphot)
+func Sh2o        = 0.;              // Source term for H2O concentration balance, updated at each iteration from Van Henten (from fphot)
 real gammaH2Oair = 0.;              // Vapour concentration in air (g/m^3)
 real gammaH2Osur = 0.;              // Vapour concentration on canopy surface (g/m^3)
 func h2oinit     = 0.85;            // from paper
 
 // CO2 Mass fraction equation
 real Dco2        = 0.1381e-4;       // Diffusion coefficient carbon dioxyde (m^2/s)
-real Sco2        = 0.;              // Source term for CO2 concentration balance, updated at each iteration from Van Henten (from fphot)
+func Sco2        = 0.;              // Source term for CO2 concentration balance, updated at each iteration from Van Henten (from fphot)
 real gammaCO2    = 0.;              // CO2 concentration in air (PPM)
 func co2init     = 0.00153;         // from paper
 
@@ -119,7 +119,7 @@ real Rnet = (1 - rhor) * Ilight * CAC;                          // Net radiation
 cout << "R_net = " << Rnet << "Wm^2" << endl;
 
 // Lambda_E equation
-real Qlatent = 0.;                                              // Latent heat flux (W/m^2)
+func Qlatent = 0.;                                              // Latent heat flux (W/m^2)
 real Lv = 2453e3;                                               // Specific latent heat of vaporization (KJ/m^3)
 
 real[int] vectETmass(N+1);                                      // Water mass evapotranspiration rate (g/m^2 s)

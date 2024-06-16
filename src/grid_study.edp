@@ -21,8 +21,6 @@ real[int] errT(meshSize.n);
 real[int] errH2O(meshSize.n);
 real[int] errCO2(meshSize.n);
 
-real absu = 0.;
-
 for(int i = 0; i < meshSize.n; i++){
 
 	mesh3 Th = cube(meshSize[i], meshSize[i], meshSize[i], [L*x,L*y,L*z]);
@@ -41,7 +39,7 @@ for(int i = 0; i < meshSize.n; i++){
 
 	//Temperature Functions;
 	Qh T, tau;
-	Qh Q = Ilight; //photon energy per area (coerente con VanHenten)
+	func Q = Ilight; //photon energy per area (coerente con VanHenten)
 	Qlatent = Rnet;
 
 	// SPECIES MASS FRACTION EQUATION:
@@ -143,8 +141,7 @@ for(int i = 0; i < meshSize.n; i++){
 	// Non-linear problem solution with Newton's method:
 	NavierStokes;
 
-	absu = max(abs(ux), abs(uy), abs(uz));
-    tauK = h/(2*absu);
+    tauK = h/(2*sqrt([ux,uy,uz]'*[ux,uy,uz]));
 
 	errUx[i] = sqrt(int3d(Th)(grad(ux)'*grad(ux)));
 	errUy[i] = sqrt(int3d(Th)(grad(uy)'*grad(uy)));
@@ -163,22 +160,22 @@ for(int i = 0; i < meshSize.n; i++){
 	errCO2[i] = sqrt(int3d(Th)(grad(co2)'*grad(co2)));
 
     // Velocity plot:
-	string velocity = "Velocity_" + i + ".vtk";
+	string velocity = "Velocity_" + meshSize[i] + ".vtk";
 	int[int] ord3 = [1, 1, 1];
 	savevtk(velocity, Th, [ux, uy, uz], dataname="Velocity", order=ord3);
 
 	// Temperature plot:
-	string temperature = "Temperature_" + i + ".vtk";
+	string temperature = "Temperature_" + meshSize[i] + ".vtk";
 	int[int] ordT=[1];
 	savevtk(temperature, Th, T, dataname="Temperature", order=ordT);
 	
 	// H2O plot
-	string massh2o = "MAssh2o_" + i + ".vtk";
+	string massh2o = "MAssh2o_" + meshSize[i] + ".vtk";
 	int[int] ordh=[1];
 	savevtk(massh2o, Th, h2o, dataname="Mass_h2o", order=ordh);
 
 	// CO2 plot
-	string massco2 = "Massco2_" + i + ".vtk";
+	string massco2 = "Massco2_" + meshSize[i] + ".vtk";
 	int[int] ordc=[1];
 	savevtk(massco2, Th, co2, dataname="Mass_co2", order=ordc);
 
