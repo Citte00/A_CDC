@@ -26,7 +26,6 @@ Qh p1; // pressure at the next iteration
 Qh Q;
 
 // Stabilization term definitions
-real absu = 0.;
 Qh hK = hTriangle;
 Qh tauK;
 

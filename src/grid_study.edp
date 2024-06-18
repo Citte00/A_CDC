@@ -141,7 +141,7 @@ for(int i = 0; i < meshSize.n; i++){
 	// Non-linear problem solution with Newton's method:
 	NavierStokes;
 	
-	real absu = sqrt(int3d(Th)([ux,uy,uz]'*[ux,uy,uz]));
+	absu = sqrt(int3d(Th)([ux,uy,uz]'*[ux,uy,uz]));
 	tauK = h[].max/(2*absu);
 	cout << "Tau_K = " << tauK[] << endl;
 
