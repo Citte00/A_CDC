@@ -14,12 +14,12 @@ for (int t = 0; t < N; t++){
     vectTc(t+1) = vectTa(t+1) - 1;           // approximation suggested by Agricola Moderna
     cout << "Tc = " << vectTc(t+1) << endl;
 
-    gammaCO2 = int3d(Th)(co2 * 1e6 * (1-Chi))/int3d(Th)(1-Chi);
+    gammaCO2 = int3d(Th)(co2 * 1e6)/int3d(Th)(1.0);
     cout << "gammaCO2 = " << gammaCO2 << endl;
 
     // integral mean and change of unit (now we want it g/m^3):
-    gammaH2Oair = int3d(Th)(h2o * rhoa * 1e3 * (1-Chi))/int3d(Th)(1-Chi);
-    gammaH2Osur = int3d(Th)(h2o * rhoa * 1e3 * Chi)/int3d(Th)(Chi);
+    gammaH2Oair = int3d(Th)(h2o * rhoa * 1e3)/int3d(Th)(1.0);
+    gammaH2Osur = int2d(Th,5)(h2o * rhoa * 1e3)/int2d(Th,5)(1.0);
     cout << "gammaH2Oair = " << gammaH2Oair << endl;
     cout << "gammaH2Osur = " << gammaH2Osur << endl;
 

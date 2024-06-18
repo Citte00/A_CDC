@@ -21,6 +21,7 @@ real[int] errT(meshSize.n);
 real[int] errH2O(meshSize.n);
 real[int] errCO2(meshSize.n);
 
+
 for(int i = 0; i < meshSize.n; i++){
 
 	mesh3 Th = cube(meshSize[i], meshSize[i], meshSize[i], [L*x,L*y,L*z]);
@@ -35,11 +36,10 @@ for(int i = 0; i < meshSize.n; i++){
 	Qh p1 ; // pressure at the next iteration
 	Qh tauK;
 	Qh h = hTriangle;
-	// Qh Chi = (x>=0.06 && x<=0.94 && y>=0.06 && y<=0.94 && z>=0 && z<=0.15);
 
 	//Temperature Functions;
 	Qh T, tau;
-	func Q = Ilight; //photon energy per area (coerente con VanHenten)
+	real Q = Ilight; //photon energy per area (coerente con VanHenten)
 	Qlatent = Rnet;
 
 	// SPECIES MASS FRACTION EQUATION:
@@ -119,29 +119,31 @@ for(int i = 0; i < meshSize.n; i++){
 	// TEMPERATURE EQUATION
 	problem energy (T, tau, solver = sparsesolver)
     	= int3d(Th)([ux, uy, uz]'*grad(T)*tau + muT*grad(T)'*grad(tau))
-    	+ int3d(Th)(tauK * ([ux, uy, uz]'*grad(T)) * ([ux, uy, uz]'*grad(tau)))
+		+ int3d(Th)(tauK * ([ux, uy, uz]'*grad(T)) * ([ux, uy, uz]'*grad(tau)))
     	- int2d(Th,5)(-Qlatent/(Cp*rhoa) * tau)
        	- int2d(Th,6)(Q/(Cp*rhoa) * tau)
 		+ on(1, T=TambK);
 
 	// SPECIES MASS FRACTION EQUATION:
 	problem massH2O (h2o, hv, solver = sparsesolver)
-    	= int3d(Th)([ux, uy, uz]' * grad(h2o) * hv + Dh2o * grad(h2o)' * grad(hv))
-    	+ int3d(Th)(tauK * ([ux, uy, uz]'*grad(h2o)) * ([ux, uy, uz]'*grad(hv)))
+    	= int3d(Th)([ux, uy, uz]' * grad(h2o) * hv + Dh2o * grad(h2o)' * grad(hv)) 
+		+ int3d(Th)(tauK * ([ux, uy, uz]'*grad(h2o)) * ([ux, uy, uz]'*grad(hv)))
     	- int2d(Th,5)(Sh2o/rhoa * hv)
 		+ on(1, h2o=h2oinit);
 
 	problem massCO2 (co2, c, solver = sparsesolver)
-        = int3d(Th)([ux, uy, uz]' * grad(co2) * c + Dco2 * grad(co2)' * grad(c))
-    	+ int3d(Th)(tauK * ([ux, uy, uz]'*grad(co2)) * ([ux, uy, uz]'*grad(c)))
+        = int3d(Th)([ux, uy, uz]' * grad(co2) * c + Dco2 * grad(co2)' * grad(c)) 
+		+ int3d(Th)(tauK * ([ux, uy, uz]'*grad(co2)) * ([ux, uy, uz]'*grad(c)))
     	- int2d(Th,5)(Sco2/rhoa * c)
 		+ on(1, co2=co2init);
 
 
 	// Non-linear problem solution with Newton's method:
 	NavierStokes;
-
-    tauK = h/(2*sqrt([ux,uy,uz]'*[ux,uy,uz]));
+	
+	real absu = sqrt(int3d(Th)([ux,uy,uz]'*[ux,uy,uz]));
+	tauK = h[].max/(2*absu);
+	cout << "Tau_K = " << tauK[] << endl;
 
 	errUx[i] = sqrt(int3d(Th)(grad(ux)'*grad(ux)));
 	errUy[i] = sqrt(int3d(Th)(grad(uy)'*grad(uy)));
@@ -170,7 +172,7 @@ for(int i = 0; i < meshSize.n; i++){
 	savevtk(temperature, Th, T, dataname="Temperature", order=ordT);
 	
 	// H2O plot
-	string massh2o = "MAssh2o_" + meshSize[i] + ".vtk";
+	string massh2o = "Massh2o_" + meshSize[i] + ".vtk";
 	int[int] ordh=[1];
 	savevtk(massh2o, Th, h2o, dataname="Mass_h2o", order=ordh);
 
