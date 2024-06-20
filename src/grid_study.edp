@@ -9,7 +9,7 @@ ofstream file("method_check2.txt");
 file << "meshSize" << " " << "ux" << " " << "uy" << " " << "uz" << " " << "T" << " " << "H2O" << " " << "CO2" << endl;
 
 ofstream file2("method_check3.txt");
-file << "meshSize" << " " << "errUx" << " " << "errUy" << " " << "errUz" << " " << "errT" << " " << "errH2O" << " " << "errCO2" << endl;
+file << "h" << " " << "errUx" << " " << "errUy" << " " << "errUz" << " " << "errT" << " " << "errH2O" << " " << "errCO2" << endl;
 
 //Mesh Generation
 int[int] meshSize = [10, 15, 20, 25, 30];
@@ -21,6 +21,7 @@ real[int] errT(meshSize.n);
 real[int] errH2O(meshSize.n);
 real[int] errCO2(meshSize.n);
 
+real[int] h(meshSize.n);
 
 for(int i = 0; i < meshSize.n; i++){
 
@@ -35,7 +36,9 @@ for(int i = 0; i < meshSize.n; i++){
 	Qh p, q ; // pressure e test function
 	Qh p1 ; // pressure at the next iteration
 	Qh tauK;
-	Qh h = hTriangle;
+	Qh hK = hTriangle;
+
+    h[i] = hK;
 
 	//Temperature Functions;
 	Qh T, tau;
@@ -142,7 +145,7 @@ for(int i = 0; i < meshSize.n; i++){
 	NavierStokes;
 	
 	absu = sqrt(int3d(Th)([ux,uy,uz]'*[ux,uy,uz]));
-	tauK = h[].max/(2*absu);
+	tauK = hK[].max/(2*absu);
 	cout << "Tau_K = " << tauK[] << endl;
 
 	errUx[i] = sqrt(int3d(Th)(grad(ux)'*grad(ux)));
@@ -181,6 +184,6 @@ for(int i = 0; i < meshSize.n; i++){
 	int[int] ordc=[1];
 	savevtk(massco2, Th, co2, dataname="Mass_co2", order=ordc);
 
-	file << "N=" << meshSize[i] << " " << ux(0.5,0.5,0.5) << " " << uy(0.5,0.5,0.5) << " " << uz(0.5,0.5,0.5) << " " << T(0.5,0.5,0.5) << " " << h2o(0.5,0.5,0.05) << " " << co2(0.5,0.5,0.05) << endl;
-    file2 << "N=" << meshSize[i] << " " << errUx[i] << " " << errUy[i] << " " << errUz[i] << " " << errT[i] << " " << errH2O[i] << " " << errCO2[i] << endl;
+	file << "N=" << meshSize[i] << " " << ux(0.5,0.5,0.5) << " " << uy(0.5,0.5,0.5) << " " << uz(0.5,0.5,0.5) << " " << T(0.5,0.5,1.) << " " << h2o(0.5,0.5,0.) << " " << co2(0.5,0.5,0.) << endl;
+    file2 << h[i] << " " << errUx[i] << " " << errUy[i] << " " << errUz[i] << " " << errT[i] << " " << errH2O[i] << " " << errCO2[i] << endl;
 }

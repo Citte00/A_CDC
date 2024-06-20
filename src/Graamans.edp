@@ -10,7 +10,7 @@ Qlatent = Rnet - Qsens;
 cout << "Latent heat flux = " << Qlatent << endl;
 
 // COMPUTE EVAPOTRANSPIRATION MASS RATE:
-vectETmass(t+1) = LAI * (gammaH2Osur - gammaH2Oair) / (ra + rs);
+vectETmass(t+1) = - LAI * (gammaH2Osur - gammaH2Oair) / (ra + rs);
 cout << "ETmass = " << vectETmass(t+1) << endl;
 
 // COMPUTE EVAPOTRANSPIRATION VOLUME RATE:
