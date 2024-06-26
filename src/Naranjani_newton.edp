@@ -6,7 +6,7 @@ load "MUMPS_seq"                    // Solvers
 include "getARGV.idp"
 
 //Mesh Generation
-int meshSize = getARGV("-n", 10);
+int meshSize = getARGV("-n", 30);
 mesh3 Th = cube(meshSize, meshSize, meshSize, [L*x,L*y,L*z]);
 
 // medit("Mesh", Th);
