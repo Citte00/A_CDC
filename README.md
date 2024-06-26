@@ -23,8 +23,9 @@ The models, proposed in each paper, are implemented in the respective files, whi
 
 Moreover:
 * `main.edp` contains the code to run a 20-days simulation;
+* `grid_study.edp` contains the code to solve the PDEs for different mesh sizes;
 * `data.edp` contains all the physical constant needed;
-* `plot_commands.sh` contains all the commands needed for the generation of the gnuplot file.
+* `plot_commands.sh` contains all the commands needed for the generation of the gnuplot file;
 * `qsub_new.sub` contains all the commands to run the simulation inside the polimi hpc cluster.
 
 ## Additional remarks
@@ -33,4 +34,4 @@ Moreover:
 * The source terms for H2O (`Sh2o`) and for CO2 (`Sco2`) are obtained, based on the molar balance of the photosynthesis reaction equation, from the gross canopy photosynthesis (`fphot`). The unit of measure of `Sh2o` and `Sco2` is kg/m^3, while `fphot` is in g* m^-2* s^-1. 
 * The amount of latent heat exchanged is calculated in `Graamans.edp` and used as a source term in `Naranjani_energy.edp`.
 * The physical value for the air viscosity `mu` should be 1e-5; however, greater values are considered to allow computation in local PCs.
-* The presence of a singular lettuce plant is modeled in the equations with an indicator function to divide the domain.
+* The presence of a singular lettuce plant is modeled.
