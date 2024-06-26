@@ -43,9 +43,9 @@ problem Stokes( [ux,uy,uz,p] , [vx,vy,vz,q], solver=sparsesolver )
 			    - div(vx,vy,vz) * p
 		        + div(ux, uy, uz) * q ) /* l.h.s. della weak formulation */
 
-	+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) /* Dirichlet BCs sulle pareti laterali (wall) */
-	+ on(1, ux = 0 , uy = uIn , uz = 0 ); /* Dirichlet BCs sulla faccia 1 (inflow) */
-	/* Neumann BCs sulla faccia 3 (outflow) */
+	+ on(2,4,5,6, ux = 0 , uy = 0 , uz = 0 ) /* Dirichlet BCs on the walls */
+	+ on(1, ux = 0 , uy = uIn , uz = 0 ); /* Dirichlet BCs at the inflow */
+	/* Neumann BCs at the outflow (automatically set by FreeFem) */
 
 // Linearized Navier Stokes:
 problem linNS( [ux1,uy1,uz1,p1] , [vx,vy,vz,q], solver=sparsesolver )

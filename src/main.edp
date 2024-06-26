@@ -31,9 +31,6 @@ for (int t = 0; t < N; t++){
 
     Sco2 = -fph;
     Sh2o = -0.41*fph;
-    // We need kg/m^3
-    // We set as characteristic length the height of the plant (cfr. Naranjani)
-    // 1:1 conversion, we divide for 1m
 
     //Compute LAI from Xsdw using the formula provided by Van Henten:
     LAI = (1-ctau)*clar*vectDW(1,t+1);
@@ -46,9 +43,9 @@ for (int t = 0; t < N; t++){
 
 // Export data for plotting:
 ofstream file("plotDW.txt");
-file << "Time" << " " << "NonStructuralDryWeight" << " " << "StructuralDryWeight" << " " << "TemperatureAir" << " " << "TemperatureCanopy" <<
-        << " " << "ETmass" << " " << "ETvol "<< endl;
+file << "Time" << " " << "NonStructuralDryWeight" << " " << "StructuralDryWeight" << " " << "TemperatureAir" << " " << "TemperatureCanopy"
+     << " " << "ETmass" << " " << "ETvol "<< endl;
 
 for (int i = 0; i < N+1; i++)
-    file << Time[i]/(24*60*60) << " " << vectDW(0,i) << " " << vectDW(1,i) << " " << vectTa(i) << " " << vectTc(i) <<
-            << " " << vectETmass[i] << " " << vectETvol[i] << endl;
+    file << Time[i]/(24*60*60) << " " << vectDW(0,i) << " " << vectDW(1,i) << " " << vectTa(i) << " " << vectTc(i)
+         << " " << vectETmass[i] << " " << vectETvol[i] << endl;

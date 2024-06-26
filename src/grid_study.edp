@@ -149,18 +149,15 @@ for(int i = 0; i < meshSize.n; i++){
 
 	// Temperature equation solution
 	energy;
-	errT[i] = sqrt(int3d(Th)([ux, uy, uz]' * grad(T) * T + muT * grad(T)' * grad(T)
-                   		        + tauK * ([ux, uy, uz]'*grad(T)) * ([ux, uy, uz]'*grad(T))));
+	errT[i] = sqrt(int3d(Th)(grad(T)' * grad(T)));
 
 	// h2o concentration
 	massH2O;
-	errH2O[i] = sqrt(int3d(Th)([ux, uy, uz]' * grad(h2o) * h2o + Dh2o * grad(h2o)' * grad(h2o)
-                     		    + tauK * ([ux, uy, uz]'*grad(h2o)) * ([ux, uy, uz]'*grad(h2o))));
+	errH2O[i] = sqrt(int3d(Th)(grad(h2o)' * grad(h2o)));
 
 	// co2 concentration
 	massCO2;
-	errCO2[i] = sqrt(int3d(Th)([ux, uy, uz]' * grad(co2) * co2 + Dco2 * grad(co2)' * grad(co2)
-	                            + tauK * ([ux, uy, uz]'*grad(co2)) * ([ux, uy, uz]'*grad(co2))));
+	errCO2[i] = sqrt(int3d(Th)(grad(co2)' * grad(co2)));
 
     // Velocity plot:
 	string velocity = "Velocity_" + meshSize[i] + ".vtk";
@@ -182,6 +179,6 @@ for(int i = 0; i < meshSize.n; i++){
 	int[int] ordc=[1];
 	savevtk(massco2, Th, co2, dataname="Mass_co2", order=ordc);
 
-	file << "N=" << meshSize[i] << " " << ux(0.5,0.5,0.5) << " " << uy(0.5,0.5,0.5) << " " << uz(0.5,0.5,0.5) << " " << T(0.5,0.5,1.) << " " << h2o(0.5,0.5,0.) << " " << co2(0.5,0.5,0.) << endl;
+	file << meshSize[i] << " " << ux(0.5,0.5,0.5) << " " << uy(0.5,0.5,0.5) << " " << uz(0.5,0.5,0.5) << " " << T(0.5,0.5,1.) << " " << h2o(0.5,0.5,0.) << " " << co2(0.5,0.5,0.) << endl;
     file2 << h[i] << " " << errU[i] << " " << errT[i] << " " << errH2O[i] << " " << errCO2[i] << endl;
 }
