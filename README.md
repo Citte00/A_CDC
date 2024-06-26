@@ -23,8 +23,9 @@ The models, proposed in each paper, are implemented in the respective files, whi
 
 Moreover:
 * `main.edp` contains the code to run a 20-days simulation;
+* `grid_study.edp` contains the code to solve the PDEs for different mesh sizes;
 * `data.edp` contains all the physical constant needed;
-* `plot_commands.sh` contains all the commands needed for the generation of the gnuplot file.
+* `plot_commands.sh` contains all the commands needed for the generation of the gnuplot file;
 * `qsub_new.sub` contains all the commands to run the simulation inside the polimi hpc cluster.
 
 ## Additional remarks
