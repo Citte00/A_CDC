@@ -23,11 +23,12 @@ The models, proposed in each paper, are implemented in the respective files, whi
 
 Moreover:
 * `main.edp` contains the code to run a 20-days simulation;
-* `grid_study.edp` contains the code to solve the PDEs for different mesh sizes;
+* `grid_study.edp` contains the code to make PDEs error and grid studies, with respect to different mesh sizes;
 * `data.edp` contains all the physical constant needed;
 * `plot_commands.sh` contains all the commands needed for the generation of the gnuplot file;
 
 ## Additional remarks
+* In the code we use a specific function that makes the user choose the mesh size just by adding to the command line the expression: `-n N`, where N is the number of elements for each side of the domain.
 * The (given) intensity of the led is 45 W/m^2 or 4.6*45 PPFD (considering a complete light spectrum).
 * The temperature is considered in K in `Naranjani_energy.edp`, meanwhile in °C in `VanHenten.edp` and `Graamans.edp`.
 * The source terms for H2O (`Sh2o`) and for CO2 (`Sco2`) are obtained, based on the molar balance of the photosynthesis reaction equation, from the gross canopy photosynthesis (`fphot`). The unit of measure of `Sh2o` and `Sco2` is kg/m^3, while `fphot` is in g* m^-2* s^-1. 
