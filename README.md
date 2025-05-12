@@ -1,4 +1,4 @@
-# NAPDE Project - Biophysical model of evapotranspiration during plant growth
+# Biophysical model of evapotranspiration during plant growth
 #### Authors: Ciarimboli Luca, Citterio Lorenzo, Dell'Otto Marianna
 #### University supervisors: Perotto Simona, Ferro Nicola
 #### External supervisor: Antona Alessandro (Agricola Moderna)
@@ -26,7 +26,6 @@ Moreover:
 * `grid_study.edp` contains the code to solve the PDEs for different mesh sizes;
 * `data.edp` contains all the physical constant needed;
 * `plot_commands.sh` contains all the commands needed for the generation of the gnuplot file;
-* `qsub_new.sub` contains all the commands to run the simulation inside the polimi hpc cluster.
 
 ## Additional remarks
 * The (given) intensity of the led is 45 W/m^2 or 4.6*45 PPFD (considering a complete light spectrum).
