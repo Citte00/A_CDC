@@ -4,7 +4,7 @@
 #### External supervisor: Antona Alessandro (Agricola Moderna)
 
 ## General description
-This project is part of the course 052497 - "NUMERICAL ANALYSIS FOR PARTIAL DIFFERENTIAL EQUATIONS" at Politecnico di Milano. 
+This project is part of the course 052497 - "NUMERICAL ANALYSIS FOR PARTIAL DIFFERENTIAL EQUATIONS" at Politecnico di Milano. Refer to `report.pdf` for a detailed explanation of the background and results related to this project.
 
 The goal of this project is to simulate the growth of a lettuce plant in a vertical farm to quantize the evapotranspiration.
 
